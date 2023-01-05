@@ -19,7 +19,6 @@
     "@ionic/storage": "^3.0.6",
     "@ionic/vue": "^6.0.0",
     "@ionic/vue-router": "^6.0.0",
-    "cordova-sqlite-storage": "^6.1.0",
     "core-js": "^3.6.5",
     "ionicons": "^6.0.3",
     "localforage-cordovasqlitedriver": "^1.8.0",
@@ -28,8 +27,10 @@
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
+    "@capacitor-community/sqlite": "^4.6.0",
     "@capacitor/cli": "4.6.1",
     "@commitlint/cz-commitlint": "^17.4.0",
+    "@ionic/cli": "6.20.6",
     "@types/jest": "^27.0.2",
     "@typescript-eslint/eslint-plugin": "^5.6.0",
     "@typescript-eslint/parser": "^5.6.0",
@@ -57,7 +58,8 @@
     "prettier": "^2.8.1",
     "standard-version": "^9.5.0",
     "ts-jest": "^27.0.7",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "vue-sqlite-hook": "^3.0.3"
   },
   "config": {
     "commitizen": {

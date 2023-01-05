@@ -37,7 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { Drivers, Storage } from '@ionic/storage';
 import {
   IonApp,
   IonContent,
@@ -61,8 +60,8 @@ import {
   playOutline,
   playSharp,
 } from 'ionicons/icons';
-import * as CordovaSQLiteDriver from 'localforage-cordovasqlitedriver';
-import { ref } from 'vue';
+import { getCurrentInstance, ref } from 'vue';
+import { useSQLite } from 'vue-sqlite-hook';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -97,15 +96,38 @@ if (path !== undefined) {
     (page) => page.url.toLowerCase().replace('/', '') === path.toLowerCase()
   );
 }
-
-const store = new Storage({
-  driverOrder: [
-    CordovaSQLiteDriver._driver,
-    Drivers.IndexedDB,
-    Drivers.LocalStorage,
-  ],
-});
-// await store.defineDriver(CordovaSQLiteDriver);
+const app = getCurrentInstance();
+const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
+const contentMessage = app?.appContext.config.globalProperties.$messageContent;
+const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
+const onProgressImport = async (progress: string) => {
+  if (jsonListeners.jsonListeners.value) {
+    if (!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+    contentMessage.setMessage(
+      contentMessage.message.value.concat(`${progress}\n`)
+    );
+  }
+};
+const onProgressExport = async (progress: string) => {
+  if (jsonListeners.jsonListeners.value) {
+    if (!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
+    contentMessage.setMessage(
+      contentMessage.message.value.concat(`${progress}\n`)
+    );
+  }
+};
+if (app != null) {
+  // !!!!! if you do not want to use the progress events !!!!!
+  // since vue-sqlite-hook 2.1.1
+  // app.appContext.config.globalProperties.$sqlite = useSQLite()
+  // before
+  // app.appContext.config.globalProperties.$sqlite = useSQLite({})
+  // !!!!!                                               !!!!!
+  app.appContext.config.globalProperties.$sqlite = useSQLite({
+    onProgressImport,
+    onProgressExport,
+  });
+}
 </script>
 
 <style scoped>
