@@ -1,0 +1,7 @@
+{
+  "name": "ConBingoIonic",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
