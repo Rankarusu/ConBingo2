@@ -1,5 +1,6 @@
 {
   "name": "ConBingoIonic",
+  "description": "A bullshit-bingo-esque to play with your weeb friends at conventions",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -15,15 +16,20 @@
     "@capacitor/haptics": "4.1.0",
     "@capacitor/keyboard": "4.1.0",
     "@capacitor/status-bar": "4.1.1",
+    "@ionic/storage": "^3.0.6",
     "@ionic/vue": "^6.0.0",
     "@ionic/vue-router": "^6.0.0",
+    "cordova-sqlite-storage": "^6.1.0",
     "core-js": "^3.6.5",
     "ionicons": "^6.0.3",
+    "localforage-cordovasqlitedriver": "^1.8.0",
+    "swiper": "^8.4.5",
     "vue": "^3.2.21",
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
     "@capacitor/cli": "4.6.1",
+    "@commitlint/cz-commitlint": "^17.4.0",
     "@types/jest": "^27.0.2",
     "@typescript-eslint/eslint-plugin": "^5.6.0",
     "@typescript-eslint/parser": "^5.6.0",
@@ -38,12 +44,24 @@
     "@vue/test-utils": "^2.0.0-rc.16",
     "@vue/vue3-jest": "^27.0.0-alpha.3",
     "babel-jest": "^27.3.1",
+    "commitizen": "^4.2.6",
     "cypress": "^8.7.0",
     "eslint": "^8.4.1",
-    "eslint-plugin-vue": "^9.8.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-deprecation": "^1.3.3",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.3",
+    "inquirer": "^8.2.5",
     "jest": "^27.3.1",
+    "prettier": "^2.8.1",
+    "standard-version": "^9.5.0",
     "ts-jest": "^27.0.7",
     "typescript": "^4.3.5"
   },
-  "description": "An Ionic project"
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }

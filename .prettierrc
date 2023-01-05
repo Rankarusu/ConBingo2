@@ -1,0 +1,13 @@
+{
+  "singleQuote": true,
+  "htmlWhitespaceSensitivity": "strict",
+  "bracketSpacing": true,
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "options": {
+        "singleQuote": true
+      }
+    }
+  ]
+}
