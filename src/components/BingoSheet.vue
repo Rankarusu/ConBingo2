@@ -1,9 +1,12 @@
 <template>
   <div class="wrapper">
     <ion-grid>
-      <ion-row v-for="n in 5" :key="n">
-        <ion-col v-for="m in 5" :key="m" size="1">
-          <BingoField text="text" :read-only="props.readOnly"></BingoField>
+      <ion-row v-for="x in 5" :key="x">
+        <ion-col v-for="y in 5" :key="y" size="1">
+          <BingoField
+            :text="props.fields[(x - 1) * 5 + (y - 1)].text"
+            :read-only="props.readonly"
+          ></BingoField>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -13,9 +16,15 @@
 <script setup lang="ts">
 import { IonGrid, IonCol, IonRow } from '@ionic/vue';
 import BingoField from './BingoField.vue';
+import { DbBingoField } from '@/models/DbBingoField';
 
-const props = defineProps({
-  readOnly: { type: Boolean, default: false },
+interface BingoSheetProps {
+  fields: DbBingoField[];
+  readonly?: boolean;
+}
+
+const props = withDefaults(defineProps<BingoSheetProps>(), {
+  readonly: false,
 });
 </script>
 

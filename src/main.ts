@@ -35,7 +35,11 @@ import {
   SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
 import { useState } from '@/composables/state';
-import { schemaToImport179 } from '@/utils/utils-import-from-json';
+import {
+  createTables,
+  importFields,
+  selectAllFields,
+} from './utils/utils-db-no-encryption';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -86,48 +90,33 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // example: database creation with standard SQLite statements
     const ret = await sqlite.checkConnectionsConsistency();
-    const isConn = (await sqlite.isConnection('db_tab3', false)).result;
+    const isConn = (await sqlite.isConnection('db', false)).result;
     let db: SQLiteDBConnection;
     if (ret.result && isConn) {
-      db = await sqlite.retrieveConnection('db_tab3', false);
+      db = await sqlite.retrieveConnection('db', false);
     } else {
       db = await sqlite.createConnection(
-        'db_tab3',
+        'db',
         false,
         'no-encryption',
-        1,
+        2,
         false
       );
     }
     await db.open();
-    const query = `
-    CREATE TABLE IF NOT EXISTS test (
-      id INTEGER PRIMARY KEY NOT NULL,
-      name TEXT NOT NULL
-    );
-    `;
-    const res = await db.execute(query);
+    const res = await db.execute(createTables);
     if (res.changes && res.changes.changes && res.changes.changes < 0) {
       throw new Error(`Error: execute failed`);
     }
-    await sqlite.closeConnection('db_tab3', false);
+    const fields = await db.query(selectAllFields);
+    //fill the db with our predefined fields if there are none.
+    if (!fields.values?.length) {
+      await db.execute(importFields);
+    }
+    const updatedFields = await db.query(selectAllFields);
 
-    // example: database creation from importFromJson
-    const result = await sqlite.isJsonValid(JSON.stringify(schemaToImport179));
-    if (!result.result) {
-      throw new Error(`isJsonValid: "schemaToImport179" is not valid`);
-    }
-    // full import
-    const resJson = await sqlite.importFromJson(
-      JSON.stringify(schemaToImport179)
-    );
-    if (
-      resJson.changes &&
-      resJson.changes.changes &&
-      resJson.changes.changes < 0
-    ) {
-      throw new Error(`importFromJson: "full" failed`);
-    }
+    console.log(updatedFields);
+    await sqlite.closeConnection('db', false);
 
     router.isReady().then(() => {
       app.mount('#app');

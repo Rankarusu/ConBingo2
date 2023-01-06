@@ -1,45 +1,72 @@
 import { capSQLiteSet } from '@capacitor-community/sqlite';
-export const createTablesNoEncryption = `
-    CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    name TEXT,
-    company TEXT,
-    size FLOAT,
-    age INTEGER,
-    sql_deleted BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1)),
-    last_modified INTEGER DEFAULT (strftime('%s', 'now'))
+export const createTables = `
+    CREATE TABLE IF NOT EXISTS fields (
+      id INTEGER PRIMARY KEY NOT NULL,
+      text TEXT NOT NULL
     );
-    CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY NOT NULL,
-    userid INTEGER,
-    title TEXT NOT NULL,
-    body TEXT NOT NULL,
-    sql_deleted BOOLEAN DEFAULT 0 CHECK (sql_deleted IN (0, 1)),
-    last_modified INTEGER DEFAULT (strftime('%s', 'now')),
-    FOREIGN KEY (userid) REFERENCES users(id) ON DELETE SET DEFAULT
+    CREATE TABLE IF NOT EXISTS sheets (
+      id INTEGER PRIMARY KEY NOT NULL,
+      content TEXT NOT NULL
     );
-    CREATE INDEX IF NOT EXISTS users_index_name ON users (name);
-    CREATE INDEX IF NOT EXISTS users_index_last_modified ON users (last_modified);
-    CREATE INDEX IF NOT EXISTS messages_index_last_modified ON messages (last_modified);
-    CREATE TRIGGER IF NOT EXISTS users_trigger_last_modified 
-    AFTER UPDATE ON users
-    FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified  
-    BEGIN  
-        UPDATE users SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;   
-    END;      
-    CREATE TRIGGER IF NOT EXISTS messages_trigger_last_modified AFTER UPDATE ON messages
-    FOR EACH ROW WHEN NEW.last_modified < OLD.last_modified  
-    BEGIN  
-        UPDATE messages SET last_modified= (strftime('%s', 'now')) WHERE id=OLD.id;   
-    END;      
-    PRAGMA user_version = 1;
+    CREATE TABLE IF NOT EXISTS currentSheet (
+      id INTEGER PRIMARY KEY NOT NULL,
+      content TEXT NOT NULL
+    );
 `;
-export const importTwoUsers = `
-    DELETE FROM users;
-    INSERT INTO users (name,email,age) VALUES ("Whiteley","Whiteley.com",30);
-    INSERT INTO users (name,email,age) VALUES ("Jones","Jones.com",44);
+export const importFields = `
+    INSERT INTO fields (text) VALUES
+    ("Someone fixing their cosplay on the course"),
+    ("Meme Cosplayer"),
+    ("Ahegao Hoodie/Shirt"),
+    ("Bear cosplaying girl"),
+    ("Dressed normally but cat ears/tail"),
+    ("Dangerously low amount of clothing"),
+    ("Dat Ass"),
+    ("Cosplayer with prop obviously not peace bonded"),
+    ("Really shitty wig"),
+    ("Someone using a selfie stick"),
+    ("Button enthusiast"),
+    ("Person carrying a lot of merch of one character"),
+    ("Circle of people sitting on the floor playing Switch"),
+    ("Idol cosplay group"),
+    ("Girl group cosplaying guys from the same show (e.g Haikyuu)"),
+    ("""Free Hugs"""),
+    ("Someone wearing just a Naruto headband"),
+    ("""I think I'm getting a cold..."""),
+    ("Body type of cosplayer and and cosplayed character do not match"),
+    ("Non-Anime related cosplay"),
+    ("Someone (Termi) doing something inappropriate"),
+    ("Someone shouting an old meme"),
+    ("Buff guy dressed as girl"),
+    ("Fur Suit"),
+    ("Overpriced Food/Water"),
+    ("Smelly people"),
+    ("People with weapons fighting"),
+    ("Obligatory Genshin Cosplayers"),
+    ("Ramune"),
+    ("MIKU"),
+    ("Shingeki no Kyojin Cosplay group"),
+    ("Boku no Hero Academia Cosplay group"),
+    ("Someone carrying a body pillow"),
+    ("Deadpool"),
+    ("JoJo Cosplayer (Pose with them!)"),
+    ("Maid Outfits"),
+    ("Gender swap Cosplay"),
+    ("Cosplay couple"),
+    ("Eeeveelution Cosplay"),
+    ("it rains"),
+    ("Program gets changed/delayed"),
+    ("Guy cosplaying Astolfo"),
+    ("""my butt/legs/feet hurt"""),
+    ("People playing TCG (Yu-Gi-Oh!, MTG, etc.)"),
+    ("Lost parents"),
+    ("Person that is probably sweating to death in his full body cosplay."),
+    ("20 meter queue")
 `;
+export const selectAllFields = `
+  SELECT * FROM fields
+`;
+
 export const importThreeMessages = `
     DELETE FROM messages;
     INSERT INTO messages (userid,title,body) VALUES (1,"test post 1","content test post 1");
