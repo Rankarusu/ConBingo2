@@ -1,6 +1,6 @@
 <template>
   <ion-item>
-    <ion-label>{{ props.text }}</ion-label>
+    <ion-label class="custom-label">{{ props.text }}</ion-label>
     <ion-button slot="end" fill="clear" color="medium">
       <ion-icon slot="icon-only" :icon="create"></ion-icon>
     </ion-button>
@@ -14,13 +14,20 @@
 import { IonItem, IonIcon, IonButton, IonLabel } from '@ionic/vue';
 import { create, trash } from 'ionicons/icons';
 
-const props = defineProps({
-  text: { type: String, required: true },
-});
+interface BingoFieldListItemProps {
+  text: string;
+  id: number;
+}
+
+const props = defineProps<BingoFieldListItemProps>();
 </script>
 
 <style scoped>
 ion-button.button {
   margin-left: 0.125rem;
+}
+
+ion-label.custom-label {
+  white-space: normal;
 }
 </style>

@@ -69,7 +69,11 @@ async function initializeSheet() {
   const fieldTexts: DbBingoField[] = Array.from(indices).map(
     (index) => dbFields.values[index]
   );
-  fieldTexts.splice(12, 0, { id: undefined, text: 'FREE SPACE' });
+  fieldTexts.splice(12, 0, {
+    id: undefined,
+    text: 'FREE SPACE',
+    checked: true,
+  });
   console.log(fieldTexts);
   return fieldTexts;
 }

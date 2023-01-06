@@ -67,6 +67,11 @@ export const selectAllFields = `
   SELECT * FROM fields
 `;
 
+export const selectAllFieldsAlphabetical = `
+  SELECT * FROM fields
+  ORDER BY text ASC
+`;
+
 export const importThreeMessages = `
     DELETE FROM messages;
     INSERT INTO messages (userid,title,body) VALUES (1,"test post 1","content test post 1");

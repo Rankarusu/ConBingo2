@@ -5,7 +5,7 @@
     @click="toggleChecked"
   >
     <ion-card-content>{{ props.text }}</ion-card-content>
-    <ion-ripple-effect v-if="!props.readOnly"></ion-ripple-effect>
+    <ion-ripple-effect v-if="!props.readonly"></ion-ripple-effect>
   </ion-card>
 </template>
 
@@ -13,18 +13,25 @@
 import { IonCard, IonCardContent, IonRippleEffect } from '@ionic/vue';
 import { ref } from 'vue';
 
+interface BingoFieldProps {
+  text: string;
+  readonly?: boolean;
+  checked?: boolean;
+  position: number;
+}
+
 function toggleChecked() {
-  if (!props.readOnly) {
+  if (!props.readonly) {
     checked.value = !checked.value;
   }
 }
 
-const checked = ref<boolean>(false);
-
-const props = defineProps({
-  text: { type: String, required: true },
-  readOnly: { type: Boolean, default: false },
+const props = withDefaults(defineProps<BingoFieldProps>(), {
+  readonly: false,
+  checked: false,
 });
+
+const checked = ref<boolean>(props.checked);
 </script>
 
 <style scoped>
