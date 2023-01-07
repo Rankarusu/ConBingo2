@@ -12,49 +12,18 @@
 
   <ion-item lines="none">
     <ion-label class="ion-text-center">
-      {{ props.fields?.length }} Fields
+      {{ props.fields?.length }} Field{{
+        props.fields!.length !== 1 ? 's' : ''
+      }}
     </ion-label>
   </ion-item>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button>
-      <ion-icon :icon="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
-  <!-- <ion-infinite-scroll @ion-infinite="ionInfinite">
-    <ion-infinite-scroll-content
-      loading-spinner="bubbles"
-    ></ion-infinite-scroll-content>
-  </ion-infinite-scroll> -->
 </template>
 
 <script setup lang="ts">
 import BingoFieldListItem from './BingoFieldListItem.vue';
-import { IonList } from '@ionic/vue';
-import { add } from 'ionicons/icons';
+import { IonList, IonItem, IonLabel, IonItemDivider } from '@ionic/vue';
 
 import { DbBingoField } from '@/models/DbBingoField';
-
-//an infinite scroller really is overkill
-// function generateItems() {
-//   if (!props.fields) {
-//     throw new Error('no fields found');
-//   }
-
-//   const count = items.length;
-//   for (let i = 0; i < 20; i++) {
-//     if (count + i === props.fields?.length) {
-//       break;
-//     }
-//     const item = props.fields[count + i];
-//     items.push(item);
-//   }
-// }
-
-// const ionInfinite = (ev: any) => {
-//   generateItems();
-//   setTimeout(() => ev.target.complete(), 500);
-// };
 
 interface BingoFieldListProps {
   fields?: DbBingoField[];
