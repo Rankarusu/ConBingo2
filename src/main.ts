@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, provide } from 'vue';
 import App from './App.vue';
 import router from './router';
 
@@ -40,6 +40,12 @@ import {
   importFields,
   selectAllFields,
 } from './utils/utils-db-no-encryption';
+import { defaultFields, schema } from './utils/dbJSONimport';
+import {
+  useCreateTables,
+  useImportFields,
+  useSelectAllFields,
+} from './composables/database';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -103,26 +109,38 @@ window.addEventListener('DOMContentLoaded', async () => {
         false
       );
     }
+
     await db.open();
-    const res = await db.execute(createTables);
+    const res = await useCreateTables(db);
+    console.log(res);
+    //handle fucked JSON here
+    // const a = await sqlite.isJsonValid(JSON.stringify(schema));
+    // const res = await sqlite.importFromJson(JSON.stringify(schema));
     if (res.changes && res.changes.changes && res.changes.changes < 0) {
       throw new Error(`Error: execute failed`);
     }
-    const fields = await db.query(selectAllFields);
+
+    const fields = await useSelectAllFields(db);
+    console.log(fields);
     //fill the db with our predefined fields if there are none.
     if (!fields.values?.length) {
-      await db.execute(importFields);
+      await useImportFields(db);
     }
-    const updatedFields = await db.query(selectAllFields);
 
-    console.log(updatedFields);
     await sqlite.closeConnection('db', false);
 
     router.isReady().then(() => {
       app.mount('#app');
     });
+
+    // document.addEventListener('pause', onPause, false);
   } catch (err) {
     console.log(`Error: ${err}`);
     throw new Error(`Error: ${err}`);
   }
+
+  // async function onPause() {
+  //   console.log('onPause emitted');
+  //   await sqlite.closeConnection('db', false);
+  // }
 });

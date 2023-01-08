@@ -10,18 +10,19 @@ export const createTables = `
     );
     CREATE TABLE IF NOT EXISTS currentSheet (
       id INTEGER PRIMARY KEY NOT NULL,
-      content TEXT NOT NULL
+      text TEXT NOT NULL,
+      checked INTEGER DEFAULT 0
     );
 `;
 export const importFields = `
     INSERT INTO fields (text) VALUES
     ("Someone fixing their cosplay on the course"),
-    ("Meme Cosplayer"),
-    ("Ahegao Hoodie/Shirt"),
+    ("Meme cosplayer"),
+    ("Ahegao hoodie/shirt"),
     ("Bear cosplaying girl"),
     ("Dressed normally but cat ears/tail"),
     ("Dangerously low amount of clothing"),
-    ("Dat Ass"),
+    ("Dat ass"),
     ("Cosplayer with prop obviously not peace bonded"),
     ("Really shitty wig"),
     ("Someone using a selfie stick"),
@@ -34,34 +35,34 @@ export const importFields = `
     ("Someone wearing just a Naruto headband"),
     ("""I think I'm getting a cold..."""),
     ("Body type of cosplayer and and cosplayed character do not match"),
-    ("Non-Anime related cosplay"),
-    ("Someone (Termi) doing something inappropriate"),
+    ("Non-anime related cosplay"),
+    ("Someone doing something inappropriate"),
     ("Someone shouting an old meme"),
     ("Buff guy dressed as girl"),
-    ("Fur Suit"),
-    ("Overpriced Food/Water"),
+    ("Fur suit"),
+    ("Overpriced food/water"),
     ("Smelly people"),
     ("People with weapons fighting"),
-    ("Obligatory Genshin Cosplayers"),
+    ("Obligatory Genshin cosplayers"),
     ("Ramune"),
     ("MIKU"),
-    ("Shingeki no Kyojin Cosplay group"),
-    ("Boku no Hero Academia Cosplay group"),
+    ("Shingeki no Kyojin cosplay group"),
+    ("Boku no Hero Academia cosplay group"),
     ("Someone carrying a body pillow"),
     ("Deadpool"),
-    ("JoJo Cosplayer (Pose with them!)"),
-    ("Maid Outfits"),
-    ("Gender swap Cosplay"),
+    ("JoJo cosplayer (Pose with them!)"),
+    ("Maid outfits"),
+    ("Gender swap cosplay"),
     ("Cosplay couple"),
-    ("Eeeveelution Cosplay"),
-    ("it rains"),
+    ("Eeeveelution cosplay"),
+    ("It rains"),
     ("Program gets changed/delayed"),
     ("Guy cosplaying Astolfo"),
-    ("""my butt/legs/feet hurt"""),
+    ("""My butt/legs/feet hurt"""),
     ("People playing TCG (Yu-Gi-Oh!, MTG, etc.)"),
     ("Lost parents"),
     ("Person that is probably sweating to death in his full body cosplay."),
-    ("20 meter queue")
+    ("20 (or more) meter queue")
 `;
 export const selectAllFields = `
   SELECT * FROM fields

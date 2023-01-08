@@ -13,15 +13,25 @@
     </ion-header>
     <ion-content :fullscreen="true">
       <BingoFieldList
-        v-if="filteredFields"
-        :fields="filteredFields"
+        v-if="fields"
+        :fields="fields"
+        :filter="searchTerm"
+        @edit-field-event="onEditField"
+        @delete-field-event="onDeleteField"
       ></BingoFieldList>
     </ion-content>
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-      <ion-fab-button @click="$emit('addNewFieldEvent')">
+      <ion-fab-button @click="onAddField">
         <ion-icon :icon="add"></ion-icon>
       </ion-fab-button>
     </ion-fab>
+    <ion-footer collapse="fade" :translucent="true">
+      <ion-toolbar>
+        <ion-label class="ion-text-center ion-padding-start">{{
+          footerText
+        }}</ion-label>
+      </ion-toolbar>
+    </ion-footer>
   </PageWrapper>
 </template>
 
@@ -35,13 +45,31 @@ import {
   IonContent,
   IonFab,
   IonFabButton,
+  IonFooter,
   IonHeader,
   IonIcon,
+  IonLabel,
   IonSearchbar,
   IonToolbar,
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
-import { computed, getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, provide, ref } from 'vue';
+
+function onEditField(id: number) {
+  console.log('onEditField has been caught', id);
+}
+
+function onDeleteField(id: number) {
+  console.log('onEditField has been caught', id);
+}
+
+function onAddField() {
+  console.log('onAddField has been caught');
+}
+
+//provide functions for grandchildren to use
+provide('onEditField', onEditField);
+provide('onDeleteField', onDeleteField);
 
 async function initializeFields() {
   const app = getCurrentInstance();
@@ -67,18 +95,29 @@ async function initializeFields() {
 
 const fields = ref<DbBingoField[]>();
 
-const searchTerm = ref('');
-
-const filteredFields = computed(() => {
-  return fields.value?.filter(
-    (field: DbBingoField) =>
-      field.text.toLowerCase().indexOf(searchTerm.value) > -1
-  );
-});
+const searchTerm = ref<string>('');
 
 function updateSearchTerm(event: any) {
   searchTerm.value = event.target.value.toLowerCase();
 }
+
+const listSize = computed(() => {
+  return fields.value?.filter(
+    (field: DbBingoField) =>
+      field.text.toLowerCase().indexOf(searchTerm.value) > -1
+  ).length;
+});
+
+const footerText = computed(() => {
+  let text;
+  const maxSize = fields.value?.length;
+  if (listSize.value === maxSize) {
+    text = `Displaying ${maxSize} fields`;
+  } else {
+    text = `Displaying ${listSize.value} of ${maxSize} fields`;
+  }
+  return text;
+});
 
 onMounted(async () => {
   fields.value = await initializeFields();

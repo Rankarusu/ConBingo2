@@ -2,7 +2,7 @@
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-button expand="block" @click="$emit('reloadEvent')">
+        <ion-button expand="block" @click="$emit('rerollEvent')">
           <ion-icon slot="start" :icon="reload"></ion-icon>
           Reroll
         </ion-button>
@@ -29,7 +29,7 @@
 import { IonButton, IonCol, IonGrid, IonIcon, IonRow } from '@ionic/vue';
 import { create, reload, save } from 'ionicons/icons';
 
-defineEmits(['reloadEvent', 'saveEvent', 'editEvent']);
+defineEmits(['rerollEvent', 'saveEvent', 'editEvent']);
 </script>
 
 <style scoped>

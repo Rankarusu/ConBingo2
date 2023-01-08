@@ -1,39 +1,48 @@
 <template>
   <ion-list>
-    <BingoFieldListItem
-      v-for="item in props.fields"
-      :id="item.id!"
-      :key="item.id"
-      :text="item.text"
-    >
-    </BingoFieldListItem>
+    <TransitionGroup name="list">
+      <BingoFieldListItem
+        v-for="item in props.fields"
+        v-show="filterField(item.text)"
+        :id="item.id!"
+        :key="item.id"
+        :text="item.text"
+      >
+      </BingoFieldListItem>
+    </TransitionGroup>
   </ion-list>
-  <ion-item-divider />
-
-  <ion-item lines="none">
-    <ion-label class="ion-text-center">
-      {{ props.fields?.length }} Field{{
-        props.fields!.length !== 1 ? 's' : ''
-      }}
-    </ion-label>
-  </ion-item>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
+import { IonList } from '@ionic/vue';
 import BingoFieldListItem from './BingoFieldListItem.vue';
-import { IonList, IonItem, IonLabel, IonItemDivider } from '@ionic/vue';
-
 import { DbBingoField } from '@/models/DbBingoField';
+import { defineComponent, TransitionGroup } from 'vue';
 
 interface BingoFieldListProps {
   fields?: DbBingoField[];
+  filter: string;
 }
-
 const props = defineProps<BingoFieldListProps>();
+
+function filterField(fieldText: string) {
+  return fieldText.toLowerCase().indexOf(props.filter) > -1;
+}
 </script>
 
 <style scoped>
-ion-footer {
-  height: 5rem;
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+/*  */
+.list-leave-active {
+  position: absolute;
 }
 </style>

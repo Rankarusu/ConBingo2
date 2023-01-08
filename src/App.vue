@@ -1,6 +1,6 @@
 <template>
   <ion-app>
-    <ion-split-pane content-id="main-content">
+    <ion-split-pane v-if="dbInitialized" content-id="main-content">
       <ion-menu content-id="main-content" type="overlay">
         <ion-content>
           <ion-list id="inbox-list">
@@ -37,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import {
   IonApp,
   IonContent,
@@ -60,8 +61,9 @@ import {
   playOutline,
   playSharp,
 } from 'ionicons/icons';
-import { getCurrentInstance, ref } from 'vue';
+import { getCurrentInstance, onBeforeMount, provide, ref } from 'vue';
 import { useSQLite } from 'vue-sqlite-hook';
+import { DB_INJECTION_KEY, useConnectDatabase } from './composables/database';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -128,6 +130,19 @@ if (app != null) {
     onProgressExport,
   });
 }
+
+const db = ref<SQLiteDBConnection>();
+provide(DB_INJECTION_KEY, db);
+
+const dbInitialized = ref(false);
+onBeforeMount(async () => {
+  if (app === null) {
+    throw new Error('app is null');
+  }
+  await useConnectDatabase(app, db);
+  await db.value?.open();
+  dbInitialized.value = true;
+});
 </script>
 
 <style scoped>

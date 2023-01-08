@@ -9,7 +9,7 @@
           <PlayButtonBox
             @edit-event="onEdit"
             @save-event="onSave"
-            @reload-event="onReload"
+            @reroll-event="onReroll"
           ></PlayButtonBox>
         </ion-row>
       </ion-grid>
@@ -18,14 +18,15 @@
 </template>
 
 <script setup lang="ts">
-import { IonGrid, IonRow, IonContent } from '@ionic/vue';
 import BingoSheet from '@/components/BingoSheet.vue';
-import PlayButtonBox from '@/components/PlayButtonBox.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
-import { getCurrentInstance, onMounted, ref } from 'vue';
-import { selectAllFields } from '@/utils/utils-db-no-encryption';
-import { SQLiteDBConnection } from '@capacitor-community/sqlite';
+import PlayButtonBox from '@/components/PlayButtonBox.vue';
+import { useInitializeSheet, useSetCurrentSheet } from '@/composables/bingo';
+import { useInjectDb } from '@/composables/database';
 import { DbBingoField } from '@/models/DbBingoField';
+
+import { IonContent, IonGrid, IonRow } from '@ionic/vue';
+import { onBeforeMount, ref } from 'vue';
 
 function onEdit() {
   console.log('edit event caught');
@@ -33,54 +34,16 @@ function onEdit() {
 function onSave() {
   console.log('save event caught');
 }
-function onReload() {
-  console.log('reload event caught');
-}
-
-async function initializeSheet() {
-  const app = getCurrentInstance();
-  const sqlite = app?.appContext.config.globalProperties.$sqlite;
-  const db: SQLiteDBConnection = await sqlite.createConnection(
-    'db',
-    false,
-    'no-encryption',
-    2,
-    false
-  );
-  await db.open();
-  const dbFields = await db.query(selectAllFields);
-  console.log(dbFields);
-  await sqlite.closeConnection('db');
-
-  if (!dbFields.values) {
-    throw new Error('dbFields are not there');
-  }
-
-  const fieldLength = dbFields.values.length;
-
-  const indices = new Set<number>();
-
-  while (indices.size < 24) {
-    const randomNumber = Math.floor(Math.random() * fieldLength);
-    indices.add(randomNumber);
-  }
-  console.log(indices);
-
-  const fieldTexts: DbBingoField[] = Array.from(indices).map(
-    (index) => dbFields.values[index]
-  );
-  fieldTexts.splice(12, 0, {
-    id: undefined,
-    text: 'FREE SPACE',
-    checked: true,
-  });
-  console.log(fieldTexts);
-  return fieldTexts;
+async function onReroll() {
+  console.log('reroll event caught');
 }
 
 const fields = ref<DbBingoField[] | null>(null);
-onMounted(async () => {
-  fields.value = await initializeSheet();
+
+onBeforeMount(async () => {
+  const db = await useInjectDb();
+  fields.value = await useInitializeSheet(db.value);
+  await useSetCurrentSheet(db.value, fields.value);
 });
 </script>
 
