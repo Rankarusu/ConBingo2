@@ -37,7 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import {
   IonApp,
   IonContent,

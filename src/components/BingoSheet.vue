@@ -1,24 +1,24 @@
+<!-- eslint-disable vue/valid-v-for -->
+<!-- vue tries to bind the checked state to the keys. Using uuids to circumvent that -->
 <template>
   <div class="wrapper">
-    <ion-grid>
-      <ion-row v-for="x in 5" :key="x">
-        <ion-col v-for="y in 5" :key="y" size="1">
-          <BingoField
-            :position="gridIndex(x, y)"
-            :text="props.fields[gridIndex(x, y)].text"
-            :read-only="props.readonly"
-            :checked="props.fields[gridIndex(x, y)].checked"
-          ></BingoField>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <div class="bingo-grid">
+      <BingoField
+        v-for="(item, index) in props.fields"
+        :key="uuidv4()"
+        :position="index"
+        :text="item.text"
+        :read-only="props.readonly"
+        :checked="item.checked"
+      ></BingoField>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { IonGrid, IonCol, IonRow } from '@ionic/vue';
-import BingoField from './BingoField.vue';
 import { DbBingoField } from '@/models/DbBingoField';
+import { v4 as uuidv4 } from 'uuid';
+import BingoField from './BingoField.vue';
 
 interface BingoSheetProps {
   fields: DbBingoField[];
@@ -28,15 +28,20 @@ interface BingoSheetProps {
 const props = withDefaults(defineProps<BingoSheetProps>(), {
   readonly: false,
 });
-
-function gridIndex(x: number, y: number) {
-  return (x - 1) * 5 + (y - 1);
-}
 </script>
 
 <style scoped>
-ion-grid {
-  --ion-grid-columns: 5;
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  grid-gap: 0.125rem;
+
+  padding-inline-start: var(
+    --ion-grid-padding-xs,
+    var(--ion-grid-padding, 5px)
+  );
+  padding-inline-end: var(--ion-grid-padding-xs, var(--ion-grid-padding, 5px));
 }
 
 .wrapper {
@@ -44,9 +49,5 @@ ion-grid {
   flex-grow: 1;
   align-items: center;
   width: 100%;
-}
-
-ion-col {
-  padding: 0.0625rem;
 }
 </style>

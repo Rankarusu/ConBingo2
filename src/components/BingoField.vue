@@ -2,7 +2,10 @@
   <ion-card
     :class="{ checked: checked }"
     class="ion-activatable"
-    @click="toggleChecked"
+    @click="
+      toggleChecked();
+      toggleCheckedInDb(props.position, checked);
+    "
   >
     <ion-card-content>{{ props.text }}</ion-card-content>
     <ion-ripple-effect v-if="!props.readonly"></ion-ripple-effect>
@@ -11,8 +14,7 @@
 
 <script setup lang="ts">
 import { IonCard, IonCardContent, IonRippleEffect } from '@ionic/vue';
-import { ref } from 'vue';
-
+import { inject, ref } from 'vue';
 interface BingoFieldProps {
   text: string;
   readonly?: boolean;
@@ -20,10 +22,19 @@ interface BingoFieldProps {
   position: number;
 }
 
+//inject methods from Page to avoid re-emitting events
+const toggleCheckedInDb =
+  inject<(position: number, checked: boolean) => void>('toggleCheckedInDb');
+
+if (!toggleCheckedInDb) {
+  throw new Error('injected functions not defined');
+}
+
 function toggleChecked() {
   if (!props.readonly) {
     checked.value = !checked.value;
   }
+  // emit('toggleBingoFieldEvent', [props.position, checked.value]);
 }
 
 const props = withDefaults(defineProps<BingoFieldProps>(), {

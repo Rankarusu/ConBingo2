@@ -1,17 +1,10 @@
-import {
-  ComponentInternalInstance,
-  getCurrentInstance,
-  inject,
-  Ref,
-} from 'vue';
-import { SQLiteHook } from 'vue-sqlite-hook';
 import { DbBingoField } from '@/models/DbBingoField';
 import {
   SQLiteConnection,
   SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
-import { InjectionKey } from 'vue';
 import { Capacitor } from '@capacitor/core';
+import { inject, InjectionKey, Ref } from 'vue';
 
 export const DB_INJECTION_KEY: InjectionKey<Ref<Db>> = Symbol('DB');
 
@@ -34,15 +27,6 @@ export class Db {
   private platform: string;
 
   public static async create(sqlite: SQLiteConnection) {
-    // const appInstance = getCurrentInstance();
-    // const appInstance = appq;
-    // if (!appInstance) {
-    //   throw new Error('App is null');
-    // }
-    // const app = appInstance;
-    // const sqlite: SQLiteHook =
-    //   appInstance.appContext.config.globalProperties.$sqlite;
-
     const ret = await sqlite.checkConnectionsConsistency();
     const isConn = (await sqlite.isConnection(Db.DB_NAME, false)).result;
     let db: SQLiteDBConnection;
@@ -207,6 +191,15 @@ export class Db {
       `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
       [field.id, field.text, field.checked || false]
     );
+    return result;
+  }
+
+  public async setCheckedState(position: number, checked: boolean) {
+    const result = await this.db.run(
+      `UPDATE currentSheet SET checked = ? WHERE id = ?;`,
+      [checked, position]
+    );
+    await this.commit();
     return result;
   }
 }

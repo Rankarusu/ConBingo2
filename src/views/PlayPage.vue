@@ -26,9 +26,15 @@ import { useInjectDb } from '@/composables/database';
 import { DbBingoField } from '@/models/DbBingoField';
 
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, provide, ref } from 'vue';
 
 const db = useInjectDb();
+
+function toggleCheckedInDb(position: number, checked: boolean) {
+  db.value.setCheckedState(position, checked);
+}
+
+provide('toggleCheckedInDb', toggleCheckedInDb);
 
 function onEdit() {
   console.log('edit event caught');
@@ -38,8 +44,9 @@ function onSave() {
 }
 async function onReroll() {
   console.log('reroll event caught');
-  fields.value = await useInitializeSheet(db.value);
-  await useSetCurrentSheet(db.value, fields.value);
+  const newSheet = await useInitializeSheet(db.value);
+  await useSetCurrentSheet(db.value, newSheet);
+  fields.value = newSheet;
 }
 
 const fields = ref<DbBingoField[] | null>(null);
@@ -52,6 +59,7 @@ onBeforeMount(async () => {
     const newSheet = await useInitializeSheet(db.value);
     await useSetCurrentSheet(db.value, newSheet);
     fields.value = newSheet;
+
     const currentSheet = await db.value.selectAllCurrentSheet();
     console.log(currentSheet);
   } else {

@@ -14,10 +14,10 @@
 </template>
 
 <script lang="ts" setup>
-import { IonList } from '@ionic/vue';
-import BingoFieldListItem from './BingoFieldListItem.vue';
 import { DbBingoField } from '@/models/DbBingoField';
-import { defineComponent, TransitionGroup } from 'vue';
+import { IonList } from '@ionic/vue';
+import { TransitionGroup } from 'vue';
+import BingoFieldListItem from './BingoFieldListItem.vue';
 
 interface BingoFieldListProps {
   fields?: DbBingoField[];
