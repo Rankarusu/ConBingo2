@@ -38,9 +38,8 @@
 <script setup lang="ts">
 import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
+import { useInjectDb } from '@/composables/database';
 import { DbBingoField } from '@/models/DbBingoField';
-import { selectAllFieldsAlphabetical } from '@/utils/utils-db-no-encryption';
-import { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import {
   IonContent,
   IonFab,
@@ -53,7 +52,9 @@ import {
   IonToolbar,
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
-import { computed, getCurrentInstance, onMounted, provide, ref } from 'vue';
+import { computed, onBeforeMount, provide, ref } from 'vue';
+
+const db = useInjectDb();
 
 function onEditField(id: number) {
   console.log('onEditField has been caught', id);
@@ -70,28 +71,6 @@ function onAddField() {
 //provide functions for grandchildren to use
 provide('onEditField', onEditField);
 provide('onDeleteField', onDeleteField);
-
-async function initializeFields() {
-  const app = getCurrentInstance();
-  const sqlite = app?.appContext.config.globalProperties.$sqlite;
-  const db: SQLiteDBConnection = await sqlite.createConnection(
-    'db',
-    false,
-    'no-encryption',
-    2,
-    false
-  );
-  await db.open();
-  const dbFields = await db.query(selectAllFieldsAlphabetical);
-  console.log(dbFields);
-  await sqlite.closeConnection('db');
-
-  if (!dbFields.values) {
-    throw new Error('dbFields are not there');
-  }
-
-  return dbFields.values;
-}
 
 const fields = ref<DbBingoField[]>();
 
@@ -119,8 +98,9 @@ const footerText = computed(() => {
   return text;
 });
 
-onMounted(async () => {
-  fields.value = await initializeFields();
+onBeforeMount(async () => {
+  const dbFields = await db.value.selectAllFieldsAlphabetical();
+  fields.value = dbFields;
 });
 
 defineEmits(['addNewFieldEvent']);

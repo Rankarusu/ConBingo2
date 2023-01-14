@@ -1,54 +1,113 @@
-import { ComponentInternalInstance, inject, Ref } from 'vue';
+import {
+  ComponentInternalInstance,
+  getCurrentInstance,
+  inject,
+  Ref,
+} from 'vue';
 import { SQLiteHook } from 'vue-sqlite-hook';
 import { DbBingoField } from '@/models/DbBingoField';
-import { SQLiteDBConnection } from '@capacitor-community/sqlite';
+import {
+  SQLiteConnection,
+  SQLiteDBConnection,
+} from '@capacitor-community/sqlite';
 import { InjectionKey } from 'vue';
+import { Capacitor } from '@capacitor/core';
 
-export const DB_INJECTION_KEY: InjectionKey<Ref<SQLiteDBConnection>> =
-  Symbol('DB');
+export const DB_INJECTION_KEY: InjectionKey<Ref<Db>> = Symbol('DB');
 
-export async function useConnectDatabase(
-  app: ComponentInternalInstance,
-  db: Ref<SQLiteDBConnection | undefined>
-) {
-  const sqlite: SQLiteHook = app?.appContext.config.globalProperties.$sqlite;
-  const ret = await sqlite.checkConnectionsConsistency();
-  const isConn = (await sqlite.isConnection('db', false)).result;
-  console.log(isConn);
-  if (ret.result && isConn) {
-    db.value = await sqlite.retrieveConnection('db', false);
-  } else {
-    db.value = await sqlite.createConnection(
-      'db',
-      false,
-      'no-encryption',
-      2,
-      false
-    );
+export function useInjectDb() {
+  const db = inject(DB_INJECTION_KEY, null);
+  if (!db) {
+    throw new Error('Could not inject DB connection');
   }
+  return db;
 }
+export class Db {
+  private static DB_NAME = 'db';
 
-export async function useCreateTables(db: SQLiteDBConnection) {
-  const result = await db.execute(`
-  CREATE TABLE IF NOT EXISTS fields (
-    id INTEGER PRIMARY KEY NOT NULL,
-    text TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS sheets (
-    id INTEGER PRIMARY KEY NOT NULL,
-    content TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS currentSheet (
-    id INTEGER PRIMARY KEY NOT NULL,
-    text TEXT NOT NULL,
-    checked INTEGER DEFAULT 0
-  );
-`);
-  return result;
-}
+  private db: SQLiteDBConnection;
 
-export async function useImportFields(db: SQLiteDBConnection) {
-  const result = await db.execute(`
+  // private app: ComponentInternalInstance;
+
+  private sqlite: SQLiteConnection;
+
+  private platform: string;
+
+  public static async create(sqlite: SQLiteConnection) {
+    // const appInstance = getCurrentInstance();
+    // const appInstance = appq;
+    // if (!appInstance) {
+    //   throw new Error('App is null');
+    // }
+    // const app = appInstance;
+    // const sqlite: SQLiteHook =
+    //   appInstance.appContext.config.globalProperties.$sqlite;
+
+    const ret = await sqlite.checkConnectionsConsistency();
+    const isConn = (await sqlite.isConnection(Db.DB_NAME, false)).result;
+    let db: SQLiteDBConnection;
+    if (ret.result && isConn) {
+      db = await sqlite.retrieveConnection(Db.DB_NAME, false);
+    } else {
+      db = await sqlite.createConnection(
+        Db.DB_NAME,
+        false,
+        'no-encryption',
+        2,
+        false
+      );
+    }
+    return new this(db, sqlite);
+  }
+
+  constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
+    this.db = db;
+
+    this.sqlite = sqlite;
+    this.platform = Capacitor.getPlatform();
+    console.log(this.platform);
+  }
+
+  public async commit() {
+    if (this.platform === 'web') {
+      await this.sqlite.saveToStore(Db.DB_NAME);
+    }
+  }
+
+  public async open() {
+    await this.db.open();
+    // if (!this.db.isDBOpen()) {
+    // } else {
+    //   console.log('Db is already open');
+    // }
+  }
+
+  public async close() {
+    await this.sqlite.closeConnection(Db.DB_NAME, false);
+  }
+
+  public async createTables() {
+    const result = await this.db.execute(`
+    CREATE TABLE IF NOT EXISTS fields (
+      id INTEGER PRIMARY KEY NOT NULL,
+      text TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sheets (
+      id INTEGER PRIMARY KEY NOT NULL,
+      content TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS currentSheet (
+      id INTEGER PRIMARY KEY NOT NULL,
+      text TEXT NOT NULL,
+      checked INTEGER DEFAULT 0
+    );
+  `);
+    await this.commit();
+    return result;
+  }
+
+  public async importFields() {
+    const result = await this.db.execute(`
   INSERT INTO fields (text) VALUES
   ("Someone fixing their cosplay on the course"),
   ("Meme cosplayer"),
@@ -98,39 +157,56 @@ export async function useImportFields(db: SQLiteDBConnection) {
   ("Person that is probably sweating to death in his full body cosplay."),
   ("20 (or more) meter queue")
 `);
-  return result;
-}
-
-export async function useSelectAllFields(db: SQLiteDBConnection) {
-  const fields = await db.query(`SELECT * FROM fields`);
-  return fields;
-}
-
-export async function useSelectAllCurrentSheet(db: SQLiteDBConnection) {
-  const fields = await db.query(`SELECT * FROM currentSheet`);
-  return fields;
-}
-
-export async function useDeleteCurrentSheet(db: SQLiteDBConnection) {
-  const result = await db.execute(`DELETE FROM currentSheet;`);
-  return result;
-}
-
-export async function useInsertIntoCurrentSheet(
-  db: SQLiteDBConnection,
-  field: DbBingoField
-) {
-  const result = await db.run(
-    `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
-    [field.id, field.text, field.checked || false]
-  );
-  return result;
-}
-
-export async function useInjectDb() {
-  const db = inject(DB_INJECTION_KEY, null);
-  if (!db) {
-    throw new Error('Could not inject DB connection');
+    await this.commit();
+    return result;
   }
-  return db;
+
+  public async selectAllFields() {
+    const fields = await this.db.query(`SELECT * FROM fields`);
+    if (!fields.values) {
+      throw new Error('values not defined');
+    }
+    //SQLite saves booleans as integers, so we cast them to a bool here.
+    fields.values.map(
+      (field: DbBingoField) => (field.checked = !!field.checked)
+    );
+    return fields.values as DbBingoField[];
+  }
+
+  public async selectAllFieldsAlphabetical() {
+    const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
+    if (!fields.values) {
+      throw new Error('values not defined');
+    }
+    fields.values.map(
+      (field: DbBingoField) => (field.checked = !!field.checked)
+    );
+    return fields.values as DbBingoField[];
+  }
+
+  public async selectAllCurrentSheet() {
+    const fields = await this.db.query(`SELECT * FROM currentSheet`);
+    if (!fields.values) {
+      throw new Error('values not defined');
+    }
+    fields.values.map(
+      (field: DbBingoField) => (field.checked = !!field.checked)
+    );
+
+    return fields.values as DbBingoField[];
+  }
+
+  public async deleteCurrentSheet() {
+    const result = await this.db.execute(`DELETE FROM currentSheet;`);
+    await this.commit();
+    return result;
+  }
+
+  public async insertIntoCurrentSheet(field: DbBingoField) {
+    const result = await this.db.run(
+      `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
+      [field.id, field.text, field.checked || false]
+    );
+    return result;
+  }
 }

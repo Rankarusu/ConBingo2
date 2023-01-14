@@ -63,7 +63,7 @@ import {
 } from 'ionicons/icons';
 import { getCurrentInstance, onBeforeMount, provide, ref } from 'vue';
 import { useSQLite } from 'vue-sqlite-hook';
-import { DB_INJECTION_KEY, useConnectDatabase } from './composables/database';
+import { Db, DB_INJECTION_KEY } from './composables/database';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -99,48 +99,18 @@ if (path !== undefined) {
   );
 }
 const app = getCurrentInstance();
-const isModalOpen = app?.appContext.config.globalProperties.$isModalOpen;
-const contentMessage = app?.appContext.config.globalProperties.$messageContent;
-const jsonListeners = app?.appContext.config.globalProperties.$isJsonListeners;
-const onProgressImport = async (progress: string) => {
-  if (jsonListeners.jsonListeners.value) {
-    if (!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
-    contentMessage.setMessage(
-      contentMessage.message.value.concat(`${progress}\n`)
-    );
-  }
-};
-const onProgressExport = async (progress: string) => {
-  if (jsonListeners.jsonListeners.value) {
-    if (!isModalOpen.isModal.value) isModalOpen.setIsModal(true);
-    contentMessage.setMessage(
-      contentMessage.message.value.concat(`${progress}\n`)
-    );
-  }
-};
+
 if (app != null) {
-  // !!!!! if you do not want to use the progress events !!!!!
-  // since vue-sqlite-hook 2.1.1
-  // app.appContext.config.globalProperties.$sqlite = useSQLite()
-  // before
-  // app.appContext.config.globalProperties.$sqlite = useSQLite({})
-  // !!!!!                                               !!!!!
-  app.appContext.config.globalProperties.$sqlite = useSQLite({
-    onProgressImport,
-    onProgressExport,
-  });
+  app.appContext.config.globalProperties.$sqlite = useSQLite();
 }
 
-const db = ref<SQLiteDBConnection>();
+const db = ref<Db>();
 provide(DB_INJECTION_KEY, db);
 
 const dbInitialized = ref(false);
 onBeforeMount(async () => {
-  if (app === null) {
-    throw new Error('app is null');
-  }
-  await useConnectDatabase(app, db);
-  await db.value?.open();
+  db.value = await Db.create(app?.appContext.config.globalProperties.$sqlite);
+  await db.value.open();
   dbInitialized.value = true;
 });
 </script>

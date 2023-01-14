@@ -28,6 +28,8 @@ import { DbBingoField } from '@/models/DbBingoField';
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import { onBeforeMount, ref } from 'vue';
 
+const db = useInjectDb();
+
 function onEdit() {
   console.log('edit event caught');
 }
@@ -36,14 +38,25 @@ function onSave() {
 }
 async function onReroll() {
   console.log('reroll event caught');
+  fields.value = await useInitializeSheet(db.value);
+  await useSetCurrentSheet(db.value, fields.value);
 }
 
 const fields = ref<DbBingoField[] | null>(null);
 
 onBeforeMount(async () => {
-  const db = await useInjectDb();
-  fields.value = await useInitializeSheet(db.value);
-  await useSetCurrentSheet(db.value, fields.value);
+  const currentSheet = await db.value.selectAllCurrentSheet();
+
+  console.log(currentSheet.length);
+  if (currentSheet.length < 25) {
+    const newSheet = await useInitializeSheet(db.value);
+    await useSetCurrentSheet(db.value, newSheet);
+    fields.value = newSheet;
+    const currentSheet = await db.value.selectAllCurrentSheet();
+    console.log(currentSheet);
+  } else {
+    fields.value = currentSheet;
+  }
 });
 </script>
 
