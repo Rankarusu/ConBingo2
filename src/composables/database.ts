@@ -189,11 +189,20 @@ export class DbConnectionWrapper {
     return result;
   }
 
+  public async insertNewField(text: string) {
+    const result = await this.db.run(`INSERT INTO fields (text) VALUES (?)`, [
+      text,
+    ]);
+    this.commit();
+    return result;
+  }
+
   public async insertIntoCurrentSheet(field: DbBingoField) {
     const result = await this.db.run(
       `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
       [field.id, field.text, field.checked || false]
     );
+    //commit when everything is done. not here.
     return result;
   }
 
@@ -202,6 +211,8 @@ export class DbConnectionWrapper {
       `INSERT INTO savedSHeets (content) VALUES (?);`,
       [fields]
     );
+    this.commit();
+
     return result;
   }
 

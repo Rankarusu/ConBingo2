@@ -39,6 +39,7 @@
 import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import { useInjectDb } from '@/composables/database';
+import { useOpenModal } from '@/composables/modal';
 import { DbBingoField } from '@/models/DbBingoField';
 import {
   IonContent,
@@ -64,8 +65,12 @@ function onDeleteField(id: number) {
   console.log('onEditField has been caught', id);
 }
 
-function onAddField() {
+async function onAddField() {
   console.log('onAddField has been caught');
+  await useOpenModal(db.value);
+  //refetch data from db
+  const dbFields = await db.value.selectAllFieldsAlphabetical();
+  fields.value = dbFields;
 }
 
 //provide functions for grandchildren to use
