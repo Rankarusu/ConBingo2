@@ -1,0 +1,6 @@
+ion-toast.custom-toast--bottom {
+  transform: translateY(-56px);
+}
+ion-toast.custom-toast--top {
+  transform: translateY(56px);
+}

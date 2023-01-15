@@ -1,7 +1,10 @@
 import { DbBingoField } from '@/models/DbBingoField';
-import { Db } from './database';
+import { DbConnectionWrapper } from './database';
 
-export async function useInitializeSheet(db: Db) {
+const fieldsJsonRegex =
+  /^\[(({"id":\d+,"text":"(.*?)","checked":(true|false)},){24}({"id":\d+,"text":"(.*?)","checked":(true|false)}))\]$/;
+
+export async function useInitializeSheet(db: DbConnectionWrapper) {
   const fields = await db.selectAllFields();
 
   const indices = generateUniqueRandomNumbers(24, fields.length);
@@ -25,7 +28,10 @@ function generateUniqueRandomNumbers(limit: number, range: number) {
   return Array.from(numbers);
 }
 
-export async function useSetCurrentSheet(db: Db, fields: DbBingoField[]) {
+export async function useSetCurrentSheet(
+  db: DbConnectionWrapper,
+  fields: DbBingoField[]
+) {
   await db.deleteCurrentSheet();
   for (let i = 0; i < fields.length; i++) {
     await db.insertIntoCurrentSheet({
@@ -34,5 +40,15 @@ export async function useSetCurrentSheet(db: Db, fields: DbBingoField[]) {
       checked: fields[i].checked,
     } as DbBingoField);
   }
-  db.commit();
+  await db.commit();
+}
+
+export async function useSaveSheet(db: DbConnectionWrapper) {
+  const fields = await db.selectAllCurrentSheet();
+  const fieldsString = JSON.stringify(fields);
+  if (!fieldsString.match(fieldsJsonRegex)) {
+    throw new Error('malformed JSON input. cannot save sheet');
+  }
+  console.log(JSON.stringify(fields));
+  await db.insertIntoSavedSheets(JSON.stringify(fields));
 }

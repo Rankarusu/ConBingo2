@@ -62,7 +62,7 @@ import {
 } from 'ionicons/icons';
 import { getCurrentInstance, onBeforeMount, provide, ref } from 'vue';
 import { useSQLite } from 'vue-sqlite-hook';
-import { Db, DB_INJECTION_KEY } from './composables/database';
+import { DbConnectionWrapper, DB_INJECTION_KEY } from './composables/database';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -103,12 +103,14 @@ if (app != null) {
   app.appContext.config.globalProperties.$sqlite = useSQLite();
 }
 
-const db = ref<Db>();
+const db = ref<DbConnectionWrapper>();
 provide(DB_INJECTION_KEY, db);
 
 const dbInitialized = ref(false);
 onBeforeMount(async () => {
-  db.value = await Db.create(app?.appContext.config.globalProperties.$sqlite);
+  db.value = await DbConnectionWrapper.create(
+    app?.appContext.config.globalProperties.$sqlite
+  );
   await db.value.open();
   dbInitialized.value = true;
 });

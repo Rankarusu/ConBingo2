@@ -21,8 +21,13 @@
 import BingoSheet from '@/components/BingoSheet.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import PlayButtonBox from '@/components/PlayButtonBox.vue';
-import { useInitializeSheet, useSetCurrentSheet } from '@/composables/bingo';
+import {
+  useInitializeSheet,
+  useSaveSheet,
+  useSetCurrentSheet,
+} from '@/composables/bingo';
 import { useInjectDb } from '@/composables/database';
+import { useToastBottom } from '@/composables/toast';
 import { DbBingoField } from '@/models/DbBingoField';
 
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
@@ -41,6 +46,8 @@ function onEdit() {
 }
 function onSave() {
   console.log('save event caught');
+  useSaveSheet(db.value);
+  useToastBottom('Sheet saved!');
 }
 async function onReroll() {
   console.log('reroll event caught');

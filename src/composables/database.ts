@@ -6,7 +6,8 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { inject, InjectionKey, Ref } from 'vue';
 
-export const DB_INJECTION_KEY: InjectionKey<Ref<Db>> = Symbol('DB');
+export const DB_INJECTION_KEY: InjectionKey<Ref<DbConnectionWrapper>> =
+  Symbol('DB');
 
 export function useInjectDb() {
   const db = inject(DB_INJECTION_KEY, null);
@@ -15,7 +16,7 @@ export function useInjectDb() {
   }
   return db;
 }
-export class Db {
+export class DbConnectionWrapper {
   private static DB_NAME = 'db';
 
   private db: SQLiteDBConnection;
@@ -28,13 +29,15 @@ export class Db {
 
   public static async create(sqlite: SQLiteConnection) {
     const ret = await sqlite.checkConnectionsConsistency();
-    const isConn = (await sqlite.isConnection(Db.DB_NAME, false)).result;
+    const isConn = (
+      await sqlite.isConnection(DbConnectionWrapper.DB_NAME, false)
+    ).result;
     let db: SQLiteDBConnection;
     if (ret.result && isConn) {
-      db = await sqlite.retrieveConnection(Db.DB_NAME, false);
+      db = await sqlite.retrieveConnection(DbConnectionWrapper.DB_NAME, false);
     } else {
       db = await sqlite.createConnection(
-        Db.DB_NAME,
+        DbConnectionWrapper.DB_NAME,
         false,
         'no-encryption',
         2,
@@ -54,7 +57,7 @@ export class Db {
 
   public async commit() {
     if (this.platform === 'web') {
-      await this.sqlite.saveToStore(Db.DB_NAME);
+      await this.sqlite.saveToStore(DbConnectionWrapper.DB_NAME);
     }
   }
 
@@ -62,12 +65,12 @@ export class Db {
     await this.db.open();
     // if (!this.db.isDBOpen()) {
     // } else {
-    //   console.log('Db is already open');
+    //   console.log('DbConnectionWrapper is already open');
     // }
   }
 
   public async close() {
-    await this.sqlite.closeConnection(Db.DB_NAME, false);
+    await this.sqlite.closeConnection(DbConnectionWrapper.DB_NAME, false);
   }
 
   public async createTables() {
@@ -76,7 +79,7 @@ export class Db {
       id INTEGER PRIMARY KEY NOT NULL,
       text TEXT NOT NULL
     );
-    CREATE TABLE IF NOT EXISTS sheets (
+    CREATE TABLE IF NOT EXISTS savedSheets (
       id INTEGER PRIMARY KEY NOT NULL,
       content TEXT NOT NULL
     );
@@ -190,6 +193,14 @@ export class Db {
     const result = await this.db.run(
       `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
       [field.id, field.text, field.checked || false]
+    );
+    return result;
+  }
+
+  public async insertIntoSavedSheets(fields: string) {
+    const result = await this.db.run(
+      `INSERT INTO savedSHeets (content) VALUES (?);`,
+      [fields]
     );
     return result;
   }

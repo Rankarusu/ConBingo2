@@ -23,6 +23,9 @@ import '@ionic/vue/css/text-transformation.css';
 /* Theme variables */
 import './theme/variables.css';
 
+/* Custom Global Styles */
+import './theme/globals.css';
+
 /* SQLite imports */
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
@@ -30,7 +33,7 @@ import {
   applyPolyfills,
   defineCustomElements as jeepSqlite,
 } from 'jeep-sqlite/loader';
-import { Db } from './composables/database';
+import { DbConnectionWrapper } from './composables/database';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -53,7 +56,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
     // here you can initialize some database schema if required
 
-    const db = await Db.create(sqlite);
+    const db = await DbConnectionWrapper.create(sqlite);
 
     await db.open();
     //TODO: use JSON for importing and validate it here.
