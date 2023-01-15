@@ -16,6 +16,8 @@
 <script lang="ts" setup>
 import { DbBingoField } from '@/models/DbBingoField';
 import { IonList } from '@ionic/vue';
+//false positive
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TransitionGroup } from 'vue';
 import BingoFieldListItem from './BingoFieldListItem.vue';
 

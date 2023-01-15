@@ -148,6 +148,25 @@ export class DbConnectionWrapper {
     return result;
   }
 
+  public async selectFieldById(id: number) {
+    const result = await this.db.query(`SELECT * FROM fields WHERE id = (?)`, [
+      id,
+    ]);
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+    return result.values[0] as { id: number; text: string };
+  }
+
+  public async updateFieldById(id: number, text: string) {
+    const result = await this.db.run(
+      `UPDATE fields SET text = (?) WHERE id = (?)`,
+      [text, id]
+    );
+    this.commit();
+    return result;
+  }
+
   public async selectAllFields() {
     const fields = await this.db.query(`SELECT * FROM fields`);
     if (!fields.values) {
@@ -194,6 +213,12 @@ export class DbConnectionWrapper {
       text,
     ]);
     this.commit();
+    return result;
+  }
+
+  public async deleteFieldById(id: number) {
+    const result = await this.db.run(`DELETE FROM fields WHERE id = (?)`, [id]);
+    await this.commit();
     return result;
   }
 

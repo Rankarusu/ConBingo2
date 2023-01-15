@@ -39,8 +39,10 @@
 import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import { useInjectDb } from '@/composables/database';
-import { useOpenModal } from '@/composables/modal';
+import { useOpenEditModal, useOpenAddModal } from '@/composables/modal';
 import { DbBingoField } from '@/models/DbBingoField';
+import { capSQLiteChanges } from '@capacitor-community/sqlite';
+import { IonSearchbarCustomEvent } from '@ionic/core';
 import {
   IonContent,
   IonFab,
@@ -51,26 +53,40 @@ import {
   IonLabel,
   IonSearchbar,
   IonToolbar,
+  SearchbarChangeEventDetail,
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import { computed, onBeforeMount, provide, ref } from 'vue';
 
 const db = useInjectDb();
 
-function onEditField(id: number) {
-  console.log('onEditField has been caught', id);
+async function syncFieldsWithDb(changes: capSQLiteChanges | null) {
+  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
+  if (changes) {
+    const dbFields = await db.value.selectAllFieldsAlphabetical();
+    fields.value = dbFields;
+  }
 }
 
-function onDeleteField(id: number) {
+async function onEditField(id: number) {
   console.log('onEditField has been caught', id);
+  const changes = await useOpenEditModal(db.value, id);
+
+  await syncFieldsWithDb(changes);
+}
+
+async function onDeleteField(id: number) {
+  console.log('onEditField has been caught', id);
+  const changes = await db.value.deleteFieldById(id);
+
+  await syncFieldsWithDb(changes);
 }
 
 async function onAddField() {
   console.log('onAddField has been caught');
-  await useOpenModal(db.value);
-  //refetch data from db
-  const dbFields = await db.value.selectAllFieldsAlphabetical();
-  fields.value = dbFields;
+  const changes = await useOpenAddModal(db.value);
+
+  await syncFieldsWithDb(changes);
 }
 
 //provide functions for grandchildren to use
@@ -81,8 +97,10 @@ const fields = ref<DbBingoField[]>();
 
 const searchTerm = ref<string>('');
 
-function updateSearchTerm(event: any) {
-  searchTerm.value = event.target.value.toLowerCase();
+function updateSearchTerm(
+  event: IonSearchbarCustomEvent<SearchbarChangeEventDetail>
+) {
+  searchTerm.value = event.target.value?.toLowerCase() || '';
 }
 
 const listSize = computed(() => {
