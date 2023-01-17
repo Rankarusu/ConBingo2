@@ -179,6 +179,12 @@ export class DbConnectionWrapper {
     return fields.values as DbBingoField[];
   }
 
+  public async deleteAllFields() {
+    const result = await this.db.execute(`DELETE FROM fields`);
+    this.commit();
+    return result;
+  }
+
   public async selectAllFieldsAlphabetical() {
     const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
     if (!fields.values) {

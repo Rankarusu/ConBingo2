@@ -16,8 +16,7 @@
         v-if="fields"
         :fields="fields"
         :filter="searchTerm"
-        @edit-field-event="onEditField"
-        @delete-field-event="onDeleteField"
+        @reset-fields-event="onResetFields"
       ></BingoFieldList>
     </ion-content>
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
@@ -38,6 +37,7 @@
 <script setup lang="ts">
 import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
+import { useResetFieldsAlert } from '@/composables/alert';
 import { useInjectDb } from '@/composables/database';
 import { useOpenEditModal, useOpenAddModal } from '@/composables/modal';
 import { DbBingoField } from '@/models/DbBingoField';
@@ -85,6 +85,13 @@ async function onDeleteField(id: number) {
 async function onAddField() {
   console.log('onAddField has been caught');
   const changes = await useOpenAddModal(db.value);
+
+  await syncFieldsWithDb(changes);
+}
+
+async function onResetFields() {
+  console.log('reset fields event caught');
+  const changes = await useResetFieldsAlert(db.value);
 
   await syncFieldsWithDb(changes);
 }

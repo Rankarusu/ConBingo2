@@ -11,15 +11,20 @@
       </BingoFieldListItem>
     </TransitionGroup>
   </ion-list>
+  <ion-button expand="block" color="danger" @click="$emit('resetFieldsEvent')">
+    Reset Fields
+  </ion-button>
 </template>
 
 <script lang="ts" setup>
 import { DbBingoField } from '@/models/DbBingoField';
-import { IonList } from '@ionic/vue';
+import { IonList, IonButton, IonIcon } from '@ionic/vue';
 //false positive
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TransitionGroup } from 'vue';
 import BingoFieldListItem from './BingoFieldListItem.vue';
+
+defineEmits(['resetFieldsEvent']);
 
 interface BingoFieldListProps {
   fields?: DbBingoField[];
@@ -33,6 +38,10 @@ function filterField(fieldText: string) {
 </script>
 
 <style scoped>
+ion-button {
+  margin: 20px;
+}
+
 .list-move,
 .list-enter-active,
 .list-leave-active {
