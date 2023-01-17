@@ -27,7 +27,7 @@ import {
   useSetCurrentSheet,
 } from '@/composables/bingo';
 import { useInjectDb } from '@/composables/database';
-import { useToastBottom } from '@/composables/toast';
+import { useToast } from '@/composables/toast';
 import { DbBingoField } from '@/models/DbBingoField';
 
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
@@ -47,7 +47,7 @@ function onEdit() {
 function onSave() {
   console.log('save event caught');
   useSaveSheet(db.value);
-  useToastBottom('Sheet saved!');
+  useToast('Sheet saved!', 'bottom');
 }
 async function onReroll() {
   console.log('reroll event caught');

@@ -1,11 +1,14 @@
 import { toastController } from '@ionic/vue';
 
-export async function useToastBottom(message: string) {
+export async function useToast(
+  message: string,
+  position: 'top' | 'middle' | 'bottom'
+) {
   const toast = await toastController.create({
     message: message,
     duration: 2000,
-    position: 'bottom',
-    cssClass: 'custom-toast--bottom',
+    position: position,
+    cssClass: ToastCssClasses[position],
     buttons: [
       {
         text: 'Dismiss',
@@ -17,19 +20,8 @@ export async function useToastBottom(message: string) {
   await toast.present();
 }
 
-export async function useToastTop(message: string) {
-  const toast = await toastController.create({
-    message: message,
-    duration: 2000,
-    position: 'top',
-    cssClass: 'custom-toast--top',
-    buttons: [
-      {
-        text: 'Dismiss',
-        role: 'cancel',
-      },
-    ],
-  });
-
-  await toast.present();
+enum ToastCssClasses {
+  top = 'custom-toast--top',
+  bottom = 'custom-toast--bottom',
+  middle = '',
 }

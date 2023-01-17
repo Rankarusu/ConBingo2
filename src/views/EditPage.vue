@@ -39,9 +39,9 @@ import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import { useResetFieldsAlert } from '@/composables/alert';
 import { useInjectDb } from '@/composables/database';
-import { useOpenEditModal, useOpenAddModal } from '@/composables/modal';
+import { useOpenAddModal, useOpenEditModal } from '@/composables/modal';
+import { useToast } from '@/composables/toast';
 import { DbBingoField } from '@/models/DbBingoField';
-import { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { IonSearchbarCustomEvent } from '@ionic/core';
 import {
   IonContent,
@@ -60,40 +60,46 @@ import { computed, onBeforeMount, provide, ref } from 'vue';
 
 const db = useInjectDb();
 
-async function syncFieldsWithDb(changes: capSQLiteChanges | null) {
+async function syncFieldsWithDb() {
   //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  if (changes) {
-    const dbFields = await db.value.selectAllFieldsAlphabetical();
-    fields.value = dbFields;
-  }
+  const dbFields = await db.value.selectAllFieldsAlphabetical();
+  fields.value = dbFields;
 }
 
 async function onEditField(id: number) {
   console.log('onEditField has been caught', id);
   const changes = await useOpenEditModal(db.value, id);
-
-  await syncFieldsWithDb(changes);
+  if (changes) {
+    useToast('Field edited!', 'bottom');
+    await syncFieldsWithDb();
+  }
 }
 
 async function onDeleteField(id: number) {
   console.log('onEditField has been caught', id);
   const changes = await db.value.deleteFieldById(id);
-
-  await syncFieldsWithDb(changes);
+  if (changes) {
+    useToast('Field deleted!', 'bottom');
+    await syncFieldsWithDb();
+  }
 }
 
 async function onAddField() {
   console.log('onAddField has been caught');
   const changes = await useOpenAddModal(db.value);
-
-  await syncFieldsWithDb(changes);
+  if (changes) {
+    useToast('Field added!', 'bottom');
+    await syncFieldsWithDb();
+  }
 }
 
 async function onResetFields() {
   console.log('reset fields event caught');
   const changes = await useResetFieldsAlert(db.value);
-
-  await syncFieldsWithDb(changes);
+  if (changes) {
+    useToast('Fields have been reset!', 'middle');
+    await syncFieldsWithDb();
+  }
 }
 
 //provide functions for grandchildren to use
