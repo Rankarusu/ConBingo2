@@ -21,8 +21,6 @@ export class DbConnectionWrapper {
 
   private db: SQLiteDBConnection;
 
-  // private app: ComponentInternalInstance;
-
   private sqlite: SQLiteConnection;
 
   private platform: string;
@@ -206,6 +204,18 @@ export class DbConnectionWrapper {
     );
 
     return fields.values as DbBingoField[];
+  }
+
+  public async selectAllCheckedIds() {
+    const ids = await this.db.query(
+      `SELECT id FROM currentSheet WHERE checked = 1`
+    );
+    if (!ids.values) {
+      throw new Error('values not defined');
+    }
+    const result = ids.values.map((row: { id: number }) => row.id);
+
+    return result;
   }
 
   public async deleteCurrentSheet() {

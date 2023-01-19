@@ -26,6 +26,8 @@ import './theme/variables.css';
 /* Custom Global Styles */
 import './theme/globals.css';
 
+import Particles from 'vue3-particles';
+
 /* SQLite imports */
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
@@ -43,7 +45,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
 
-  const app = createApp(App).use(IonicVue).use(router);
+  const app = createApp(App).use(IonicVue).use(router).use(Particles);
 
   try {
     if (platform === 'web') {

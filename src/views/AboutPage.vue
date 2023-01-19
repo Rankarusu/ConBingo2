@@ -24,6 +24,25 @@
           <br />
           Thanks for downloading!
         </ion-card-content>
+        <!--                                                                                                                                   
+                  ████████                                  
+                ██        ██                                
+              ██▒▒▒▒        ██                              
+            ██▒▒▒▒▒▒      ▒▒▒▒██                            
+            ██▒▒▒▒▒▒      ▒▒▒▒██                            
+          ██  ▒▒▒▒        ▒▒▒▒▒▒██                          
+          ██                ▒▒▒▒██                          
+        ██▒▒      ▒▒▒▒▒▒          ██                        
+        ██      ▒▒▒▒▒▒▒▒▒▒        ██                        
+        ██      ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒██                        
+        ██▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒██                        
+          ██▒▒▒▒  ▒▒▒▒▒▒    ▒▒▒▒██                          
+          ██▒▒▒▒            ▒▒▒▒██                          
+            ██▒▒              ██                            
+              ████        ████                              
+                  ████████                                  
+                                 
+        Congrats on finding the easter egg! -->
         <ion-button href="https://github.com/Rankarusu/ConBingo2" fill="clear">
           <ion-icon slot="start" :icon="logoGithub" />
           GitHub

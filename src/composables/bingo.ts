@@ -1,8 +1,21 @@
 import { DbBingoField } from '@/models/DbBingoField';
+import { inject, InjectionKey } from 'vue';
 import { DbConnectionWrapper } from './database';
 
 const fieldsJsonRegex =
   /^\[(({"id":\d+,"text":"(.*?)","checked":(true|false)},){24}({"id":\d+,"text":"(.*?)","checked":(true|false)}))\]$/;
+
+export const TOGGLE_CHECKED_IN_DB_INJECTION_KEY: InjectionKey<
+  (position: number, checked: boolean) => Promise<void>
+> = Symbol('toggleCheckedInDb');
+
+export function useInjectToggleCheckedInDb() {
+  const toggleCheckedInDb = inject(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, null);
+  if (!toggleCheckedInDb) {
+    throw new Error('injected function not defined');
+  }
+  return toggleCheckedInDb;
+}
 
 export async function useInitializeSheet(db: DbConnectionWrapper) {
   const fields = await db.selectAllFields();

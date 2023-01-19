@@ -22,6 +22,7 @@ import BingoSheet from '@/components/BingoSheet.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import PlayButtonBox from '@/components/PlayButtonBox.vue';
 import {
+  TOGGLE_CHECKED_IN_DB_INJECTION_KEY,
   useInitializeSheet,
   useSaveSheet,
   useSetCurrentSheet,
@@ -33,13 +34,15 @@ import { DbBingoField } from '@/models/DbBingoField';
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import { onBeforeMount, provide, ref } from 'vue';
 
+// const confetti = require('canvas-confetti');
+
 const db = useInjectDb();
 
-function toggleCheckedInDb(position: number, checked: boolean) {
-  db.value.setCheckedState(position, checked);
+async function toggleCheckedInDb(position: number, checked: boolean) {
+  await db.value.setCheckedState(position, checked);
 }
 
-provide('toggleCheckedInDb', toggleCheckedInDb);
+provide(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, toggleCheckedInDb);
 
 function onEdit() {
   console.log('edit event caught');
