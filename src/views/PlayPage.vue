@@ -39,21 +39,22 @@ import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import { onBeforeMount, provide, ref } from 'vue';
 
 const db = useInjectDb();
+console.log(db);
 
 async function toggleCheckedInDb(position: number, checked: boolean) {
-  await db.value.setCheckedState(position, checked);
+  await db.currentSheet.setChecked(position, checked);
 }
 provide(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, toggleCheckedInDb);
 
 async function syncFieldsWithDb() {
   //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  const dbFields = await db.value.selectAllCurrentSheet();
+  const dbFields = await db.currentSheet.findAll();
   fields.value = dbFields;
 }
 
 async function onEditBingoField(id: number) {
   console.log('onEditBingoField has been caught', id);
-  const changes = await useOpenEditCurrentModal(db.value, id);
+  const changes = await useOpenEditCurrentModal(db, id);
   if (changes) {
     useToast('Field edited!', 'bottom');
     await syncFieldsWithDb();
@@ -67,13 +68,13 @@ function onEdit() {
 }
 function onSave() {
   console.log('save event caught');
-  useSaveSheet(db.value);
+  useSaveSheet(db);
   useToast('Sheet saved!', 'bottom');
 }
 async function onReroll() {
   console.log('reroll event caught');
-  const newSheet = await useInitializeSheet(db.value);
-  await useSetCurrentSheet(db.value, newSheet);
+  const newSheet = await useInitializeSheet(db);
+  await useSetCurrentSheet(db, newSheet);
   fields.value = newSheet;
 }
 
@@ -81,15 +82,15 @@ const fields = ref<DbBingoField[] | null>(null);
 const editModeEnabled = ref<boolean>(false);
 
 onBeforeMount(async () => {
-  const currentSheet = await db.value.selectAllCurrentSheet();
+  const currentSheet = await db.currentSheet.findAll();
 
   console.log(currentSheet.length);
   if (currentSheet.length < 25) {
-    const newSheet = await useInitializeSheet(db.value);
-    await useSetCurrentSheet(db.value, newSheet);
+    const newSheet = await useInitializeSheet(db);
+    await useSetCurrentSheet(db, newSheet);
     fields.value = newSheet;
 
-    const currentSheet = await db.value.selectAllCurrentSheet();
+    const currentSheet = await db.currentSheet.findAll();
     console.log(currentSheet);
   } else {
     fields.value = currentSheet;

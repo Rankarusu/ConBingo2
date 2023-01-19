@@ -13,13 +13,13 @@ export async function useOpenAddModal(db: DbConnectionWrapper) {
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.insertNewField(data);
+    return await db.fields.create(data);
   }
   return null;
 }
 
 export async function useOpenEditModal(db: DbConnectionWrapper, id: number) {
-  const field = await db.selectFieldById(id);
+  const field = await db.fields.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,
     componentProps: { title: 'Edit Field', fieldText: field.text },
@@ -30,7 +30,7 @@ export async function useOpenEditModal(db: DbConnectionWrapper, id: number) {
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.updateFieldById(id, data);
+    return await db.fields.updateOneById(id, data);
   }
   return null;
 }
@@ -39,7 +39,7 @@ export async function useOpenEditCurrentModal(
   db: DbConnectionWrapper,
   id: number
 ) {
-  const field = await db.selectCurrentSheetFieldById(id);
+  const field = await db.currentSheet.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,
     componentProps: { title: 'Edit Field', fieldText: field.text },
@@ -50,7 +50,7 @@ export async function useOpenEditCurrentModal(
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.updateCurrentSheetFieldById(id, data);
+    return await db.currentSheet.updateOneById(id, data);
   }
   return null;
 }

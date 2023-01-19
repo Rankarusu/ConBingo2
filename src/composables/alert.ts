@@ -18,8 +18,8 @@ export async function useResetFieldsAlert(db: DbConnectionWrapper) {
   console.log(role);
 
   if (role === 'confirm') {
-    await db.deleteAllFields();
-    return await db.importFields();
+    await db.fields.deleteAll();
+    return await db.fields.reset();
   }
   return null;
 }

@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { IonCard, IonCardContent, IonRippleEffect } from '@ionic/vue';
+import { IonCard, IonCardContent, IonRippleEffect, IonIcon } from '@ionic/vue';
 import { create } from 'ionicons/icons';
 import { inject, ref, toRef } from 'vue';
 import { useInjectToggleCheckedInDb } from '../composables/bingo';

@@ -18,7 +18,7 @@ export function useInjectToggleCheckedInDb() {
 }
 
 export async function useInitializeSheet(db: DbConnectionWrapper) {
-  const fields = await db.selectAllFields();
+  const fields = await db.fields.findAll();
 
   const indices = generateUniqueRandomNumbers(24, fields.length);
   const textFields = indices.map((index) => fields[index]);
@@ -45,9 +45,9 @@ export async function useSetCurrentSheet(
   db: DbConnectionWrapper,
   fields: DbBingoField[]
 ) {
-  await db.deleteCurrentSheet();
+  await db.currentSheet.deleteAll();
   for (let i = 0; i < fields.length; i++) {
-    await db.insertIntoCurrentSheet({
+    await db.currentSheet.create({
       id: i,
       text: fields[i].text,
       checked: fields[i].checked,
@@ -57,11 +57,11 @@ export async function useSetCurrentSheet(
 }
 
 export async function useSaveSheet(db: DbConnectionWrapper) {
-  const fields = await db.selectAllCurrentSheet();
+  const fields = await db.currentSheet.findAll();
   const fieldsString = JSON.stringify(fields);
   if (!fieldsString.match(fieldsJsonRegex)) {
     throw new Error('malformed JSON input. cannot save sheet');
   }
   console.log(JSON.stringify(fields));
-  await db.insertIntoSavedSheets(JSON.stringify(fields));
+  await db.savedSheets.create(JSON.stringify(fields));
 }

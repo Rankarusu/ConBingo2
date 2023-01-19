@@ -1,13 +1,13 @@
 import { DbBingoField } from '@/models/DbBingoField';
 import {
+  CapacitorSQLite,
   SQLiteConnection,
   SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
 import { inject, InjectionKey, Ref } from 'vue';
 
-export const DB_INJECTION_KEY: InjectionKey<Ref<DbConnectionWrapper>> =
-  Symbol('DB');
+export const DB_INJECTION_KEY: InjectionKey<DbConnectionWrapper> = Symbol('DB');
 
 export function useInjectDb() {
   const db = inject(DB_INJECTION_KEY, null);
@@ -16,16 +16,41 @@ export function useInjectDb() {
   }
   return db;
 }
-export class DbConnectionWrapper {
-  private static DB_NAME = 'db';
+abstract class DbConnected {
+  public db: SQLiteDBConnection;
 
-  private db: SQLiteDBConnection;
+  protected sqlite: SQLiteConnection;
 
-  private sqlite: SQLiteConnection;
+  protected platform: string;
 
-  private platform: string;
+  constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
+    this.db = db;
+    this.sqlite = sqlite;
+    this.platform = Capacitor.getPlatform();
+  }
+}
+export class DbConnectionWrapper extends DbConnected {
+  public static DB_NAME = 'db';
 
-  public static async create(sqlite: SQLiteConnection) {
+  private static instance: DbConnectionWrapper;
+
+  public currentSheet: CurrentSheetRepository;
+
+  public fields: FieldsRepository;
+
+  public savedSheets: SavedSheetsRepository;
+
+  // public static async getInstance() {
+  //   if (!DbConnectionWrapper.instance) {
+  //     DbConnectionWrapper.instance = await this.create();
+  //     console.log('instance created');
+  //   }
+  //   console.log('instance returned');
+  //   return DbConnectionWrapper.instance;
+  // }
+
+  public static async create() {
+    const sqlite = new SQLiteConnection(CapacitorSQLite);
     const ret = await sqlite.checkConnectionsConsistency();
     const isConn = (
       await sqlite.isConnection(DbConnectionWrapper.DB_NAME, false)
@@ -45,18 +70,12 @@ export class DbConnectionWrapper {
     return new this(db, sqlite);
   }
 
-  constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
-    this.db = db;
+  private constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
+    super(db, sqlite);
 
-    this.sqlite = sqlite;
-    this.platform = Capacitor.getPlatform();
-    console.log(this.platform);
-  }
-
-  public async commit() {
-    if (this.platform === 'web') {
-      await this.sqlite.saveToStore(DbConnectionWrapper.DB_NAME);
-    }
+    this.currentSheet = new CurrentSheetRepository(db, sqlite);
+    this.fields = new FieldsRepository(db, sqlite);
+    this.savedSheets = new SavedSheetsRepository(db, sqlite);
   }
 
   public async open() {
@@ -69,6 +88,12 @@ export class DbConnectionWrapper {
 
   public async close() {
     await this.sqlite.closeConnection(DbConnectionWrapper.DB_NAME, false);
+  }
+
+  public async commit() {
+    if (this.platform === 'web') {
+      await this.sqlite.saveToStore(DbConnectionWrapper.DB_NAME);
+    }
   }
 
   public async createTables() {
@@ -90,8 +115,84 @@ export class DbConnectionWrapper {
     await this.commit();
     return result;
   }
+}
 
-  public async importFields() {
+abstract class BaseRepository extends DbConnected {
+  protected async commit() {
+    if (this.platform === 'web') {
+      await this.sqlite.saveToStore(DbConnectionWrapper.DB_NAME);
+    }
+  }
+}
+
+export class FieldsRepository extends BaseRepository {
+  constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
+    super(db, sqlite);
+  }
+
+  public async findAll() {
+    const fields = await this.db.query(`SELECT * FROM fields`);
+    if (!fields.values) {
+      throw new Error('values not defined');
+    }
+    //SQLite saves booleans as integers, so we cast them to a bool here.
+    fields.values.map(
+      (field: DbBingoField) => (field.checked = !!field.checked)
+    );
+    return fields.values as DbBingoField[];
+  }
+
+  public async findAllAlphabetical() {
+    const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
+    if (!fields.values) {
+      throw new Error('values not defined');
+    }
+    fields.values.map(
+      (field: DbBingoField) => (field.checked = !!field.checked)
+    );
+    return fields.values as DbBingoField[];
+  }
+
+  public async findOneById(id: number) {
+    const result = await this.db.query(`SELECT * FROM fields WHERE id = (?)`, [
+      id,
+    ]);
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+    return result.values[0] as { id: number; text: string };
+  }
+
+  public async updateOneById(id: number, text: string) {
+    const result = await this.db.run(
+      `UPDATE fields SET text = (?) WHERE id = (?)`,
+      [text, id]
+    );
+    this.commit();
+    return result;
+  }
+
+  public async deleteAll() {
+    const result = await this.db.execute(`DELETE FROM fields`);
+    this.commit();
+    return result;
+  }
+
+  public async deleteById(id: number) {
+    const result = await this.db.run(`DELETE FROM fields WHERE id = (?)`, [id]);
+    await this.commit();
+    return result;
+  }
+
+  public async create(text: string) {
+    const result = await this.db.run(`INSERT INTO fields (text) VALUES (?)`, [
+      text,
+    ]);
+    this.commit();
+    return result;
+  }
+
+  public async reset() {
     const result = await this.db.execute(`
   INSERT INTO fields (text) VALUES
   ("Someone fixing their cosplay on the course"),
@@ -145,76 +246,13 @@ export class DbConnectionWrapper {
     await this.commit();
     return result;
   }
+}
 
-  public async selectFieldById(id: number) {
-    const result = await this.db.query(`SELECT * FROM fields WHERE id = (?)`, [
-      id,
-    ]);
-    if (!result.values) {
-      throw new Error('values not defined');
-    }
-    return result.values[0] as { id: number; text: string };
+export class CurrentSheetRepository extends BaseRepository {
+  constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
+    super(db, sqlite);
   }
-
-  public async selectCurrentSheetFieldById(id: number) {
-    const result = await this.db.query(
-      `SELECT * FROM currentSheet WHERE id = (?)`,
-      [id]
-    );
-    if (!result.values) {
-      throw new Error('values not defined');
-    }
-    return result.values[0] as { id: number; text: string };
-  }
-
-  public async updateFieldById(id: number, text: string) {
-    const result = await this.db.run(
-      `UPDATE fields SET text = (?) WHERE id = (?)`,
-      [text, id]
-    );
-    this.commit();
-    return result;
-  }
-
-  public async updateCurrentSheetFieldById(id: number, text: string) {
-    const result = await this.db.run(
-      `UPDATE currentSheet SET text = (?) WHERE id = (?)`,
-      [text, id]
-    );
-    this.commit();
-    return result;
-  }
-
-  public async selectAllFields() {
-    const fields = await this.db.query(`SELECT * FROM fields`);
-    if (!fields.values) {
-      throw new Error('values not defined');
-    }
-    //SQLite saves booleans as integers, so we cast them to a bool here.
-    fields.values.map(
-      (field: DbBingoField) => (field.checked = !!field.checked)
-    );
-    return fields.values as DbBingoField[];
-  }
-
-  public async deleteAllFields() {
-    const result = await this.db.execute(`DELETE FROM fields`);
-    this.commit();
-    return result;
-  }
-
-  public async selectAllFieldsAlphabetical() {
-    const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
-    if (!fields.values) {
-      throw new Error('values not defined');
-    }
-    fields.values.map(
-      (field: DbBingoField) => (field.checked = !!field.checked)
-    );
-    return fields.values as DbBingoField[];
-  }
-
-  public async selectAllCurrentSheet() {
+  public async findAll() {
     const fields = await this.db.query(`SELECT * FROM currentSheet`);
     if (!fields.values) {
       throw new Error('values not defined');
@@ -225,8 +263,25 @@ export class DbConnectionWrapper {
 
     return fields.values as DbBingoField[];
   }
-
-  public async selectAllCheckedIds() {
+  public async findOneById(id: number) {
+    const result = await this.db.query(
+      `SELECT * FROM currentSheet WHERE id = (?)`,
+      [id]
+    );
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+    return result.values[0] as { id: number; text: string };
+  }
+  public async updateOneById(id: number, text: string) {
+    const result = await this.db.run(
+      `UPDATE currentSheet SET text = (?) WHERE id = (?)`,
+      [text, id]
+    );
+    this.commit();
+    return result;
+  }
+  public async findAllChecked() {
     const ids = await this.db.query(
       `SELECT id FROM currentSheet WHERE checked = 1`
     );
@@ -237,28 +292,12 @@ export class DbConnectionWrapper {
 
     return result;
   }
-
-  public async deleteCurrentSheet() {
+  public async deleteAll() {
     const result = await this.db.execute(`DELETE FROM currentSheet;`);
     await this.commit();
     return result;
   }
-
-  public async insertNewField(text: string) {
-    const result = await this.db.run(`INSERT INTO fields (text) VALUES (?)`, [
-      text,
-    ]);
-    this.commit();
-    return result;
-  }
-
-  public async deleteFieldById(id: number) {
-    const result = await this.db.run(`DELETE FROM fields WHERE id = (?)`, [id]);
-    await this.commit();
-    return result;
-  }
-
-  public async insertIntoCurrentSheet(field: DbBingoField) {
+  public async create(field: DbBingoField) {
     const result = await this.db.run(
       `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
       [field.id, field.text, field.checked || false]
@@ -266,23 +305,24 @@ export class DbConnectionWrapper {
     //commit when everything is done. not here.
     return result;
   }
+  public async setChecked(position: number, checked: boolean) {
+    const result = await this.db.run(
+      `UPDATE currentSheet SET checked = ? WHERE id = ?;`,
+      [checked, position]
+    );
+    await this.commit();
+    return result;
+  }
+}
 
-  public async insertIntoSavedSheets(fields: string) {
+export class SavedSheetsRepository extends BaseRepository {
+  public async create(fields: string) {
     const result = await this.db.run(
       `INSERT INTO savedSHeets (content) VALUES (?);`,
       [fields]
     );
     this.commit();
 
-    return result;
-  }
-
-  public async setCheckedState(position: number, checked: boolean) {
-    const result = await this.db.run(
-      `UPDATE currentSheet SET checked = ? WHERE id = ?;`,
-      [checked, position]
-    );
-    await this.commit();
     return result;
   }
 }

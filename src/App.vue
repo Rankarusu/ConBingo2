@@ -1,6 +1,6 @@
 <template>
   <ion-app>
-    <ion-split-pane v-if="dbInitialized" content-id="main-content">
+    <ion-split-pane content-id="main-content">
       <ion-menu content-id="main-content" type="overlay">
         <ion-content>
           <ion-list id="inbox-list">
@@ -60,8 +60,7 @@ import {
   playOutline,
   playSharp,
 } from 'ionicons/icons';
-import { getCurrentInstance, onBeforeMount, provide, ref } from 'vue';
-import { useSQLite } from 'vue-sqlite-hook';
+import { getCurrentInstance, provide, ref } from 'vue';
 import { DbConnectionWrapper, DB_INJECTION_KEY } from './composables/database';
 
 const selectedIndex = ref(0);
@@ -97,23 +96,12 @@ if (path !== undefined) {
     (page) => page.url.toLowerCase().replace('/', '') === path.toLowerCase()
   );
 }
+
 const app = getCurrentInstance();
-
 if (app != null) {
-  app.appContext.config.globalProperties.$sqlite = useSQLite();
+  const db: DbConnectionWrapper = app?.appContext.config.globalProperties.$db;
+  provide(DB_INJECTION_KEY, db);
 }
-
-const db = ref<DbConnectionWrapper>();
-provide(DB_INJECTION_KEY, db);
-
-const dbInitialized = ref(false);
-onBeforeMount(async () => {
-  db.value = await DbConnectionWrapper.create(
-    app?.appContext.config.globalProperties.$sqlite
-  );
-  await db.value.open();
-  dbInitialized.value = true;
-});
 </script>
 
 <style scoped>

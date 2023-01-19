@@ -26,8 +26,6 @@ import './theme/variables.css';
 /* Custom Global Styles */
 import './theme/globals.css';
 
-import Particles from 'vue3-particles';
-
 /* SQLite imports */
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
@@ -36,6 +34,7 @@ import {
   defineCustomElements as jeepSqlite,
 } from 'jeep-sqlite/loader';
 import { DbConnectionWrapper } from './composables/database';
+import { createPinia } from 'pinia';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -44,8 +43,8 @@ applyPolyfills().then(() => {
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
-
-  const app = createApp(App).use(IonicVue).use(router).use(Particles);
+  const pinia = createPinia();
+  const app = createApp(App).use(IonicVue).use(router).use(pinia);
 
   try {
     if (platform === 'web') {
@@ -58,9 +57,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
     // here you can initialize some database schema if required
 
-    const db = await DbConnectionWrapper.create(sqlite);
+    const db = await DbConnectionWrapper.create();
 
     await db.open();
+    console.log('db opened in main.ts');
     //TODO: use JSON for importing and validate it here.
     const res = await db.createTables();
 
@@ -68,8 +68,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       throw new Error(`Error: execute failed`);
     }
 
-    const fields = await db.selectAllFields();
-    const currentSheet = await db.selectAllCurrentSheet();
+    const fields = await db.fields.findAll();
+    const currentSheet = await db.currentSheet.findAll();
 
     // if (currentSheet.length < 25) {
     //   const newSheet = await useInitializeSheet(db);
@@ -80,11 +80,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.log(currentSheet);
     //fill the db with our predefined fields if there are none.
     if (!fields.length) {
-      await db.importFields();
+      await db.fields.reset();
       console.log('imported fields');
     }
-
-    await db.close(); // closing our connection here because we cannot pick it up in a vue component
+    app.config.globalProperties.$db = db;
+    // await db.close(); // closing our connection here because we cannot pick it up in a vue component
 
     router.isReady().then(() => {
       app.mount('#app');

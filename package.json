@@ -24,11 +24,11 @@
     "core-js": "^3.6.5",
     "ionicons": "^6.0.3",
     "localforage-cordovasqlitedriver": "^1.8.0",
+    "pinia": "^2.0.29",
     "swiper": "^8.4.5",
     "uuid": "^9.0.0",
     "vue": "^3.2.21",
-    "vue-router": "^4.0.12",
-    "vue3-particles": "^2.7.1"
+    "vue-router": "^4.0.12"
   },
   "devDependencies": {
     "@capacitor-community/sqlite": "^4.6.0",
@@ -65,8 +65,7 @@
     "prettier": "^2.8.1",
     "standard-version": "^9.5.0",
     "ts-jest": "^27.0.7",
-    "typescript": "^4.3.5",
-    "vue-sqlite-hook": "^3.0.3"
+    "typescript": "^4.3.5"
   },
   "config": {
     "commitizen": {

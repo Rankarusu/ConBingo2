@@ -62,13 +62,13 @@ const db = useInjectDb();
 
 async function syncFieldsWithDb() {
   //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  const dbFields = await db.value.selectAllFieldsAlphabetical();
+  const dbFields = await db.fields.findAllAlphabetical();
   fields.value = dbFields;
 }
 
 async function onEditField(id: number) {
   console.log('onEditField has been caught', id);
-  const changes = await useOpenEditModal(db.value, id);
+  const changes = await useOpenEditModal(db, id);
   if (changes) {
     useToast('Field edited!', 'bottom');
     await syncFieldsWithDb();
@@ -77,7 +77,7 @@ async function onEditField(id: number) {
 
 async function onDeleteField(id: number) {
   console.log('onEditField has been caught', id);
-  const changes = await db.value.deleteFieldById(id);
+  const changes = await db.fields.deleteById(id);
   if (changes) {
     useToast('Field deleted!', 'bottom');
     await syncFieldsWithDb();
@@ -86,7 +86,7 @@ async function onDeleteField(id: number) {
 
 async function onAddField() {
   console.log('onAddField has been caught');
-  const changes = await useOpenAddModal(db.value);
+  const changes = await useOpenAddModal(db);
   if (changes) {
     useToast('Field added!', 'bottom');
     await syncFieldsWithDb();
@@ -95,7 +95,7 @@ async function onAddField() {
 
 async function onResetFields() {
   console.log('reset fields event caught');
-  const changes = await useResetFieldsAlert(db.value);
+  const changes = await useResetFieldsAlert(db);
   if (changes) {
     useToast('Fields have been reset!', 'middle');
     await syncFieldsWithDb();
@@ -135,7 +135,7 @@ const footerText = computed(() => {
 });
 
 onBeforeMount(async () => {
-  const dbFields = await db.value.selectAllFieldsAlphabetical();
+  const dbFields = await db.fields.findAllAlphabetical();
   fields.value = dbFields;
 });
 

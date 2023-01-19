@@ -77,7 +77,7 @@ function win() {
 }
 
 async function checkWin(id: number) {
-  const checkedIds = await db.value.selectAllCheckedIds();
+  const checkedIds = await db.currentSheet.findAllChecked();
 
   const result = winningRows
     .filter((row) => row.every((entry) => checkedIds.includes(entry)))
