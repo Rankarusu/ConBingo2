@@ -3,7 +3,11 @@
     <ion-content :fullscreen="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
-          <BingoSheet v-if="fields" :fields="fields"></BingoSheet>
+          <BingoSheet
+            v-if="fields"
+            :fields="fields"
+            :editable="editModeEnabled"
+          ></BingoSheet>
         </ion-row>
         <ion-row>
           <PlayButtonBox
@@ -28,24 +32,38 @@ import {
   useSetCurrentSheet,
 } from '@/composables/bingo';
 import { useInjectDb } from '@/composables/database';
+import { useOpenEditCurrentModal } from '@/composables/modal';
 import { useToast } from '@/composables/toast';
 import { DbBingoField } from '@/models/DbBingoField';
-
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import { onBeforeMount, provide, ref } from 'vue';
-
-// const confetti = require('canvas-confetti');
 
 const db = useInjectDb();
 
 async function toggleCheckedInDb(position: number, checked: boolean) {
   await db.value.setCheckedState(position, checked);
 }
-
 provide(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, toggleCheckedInDb);
+
+async function syncFieldsWithDb() {
+  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
+  const dbFields = await db.value.selectAllCurrentSheet();
+  fields.value = dbFields;
+}
+
+async function onEditBingoField(id: number) {
+  console.log('onEditBingoField has been caught', id);
+  const changes = await useOpenEditCurrentModal(db.value, id);
+  if (changes) {
+    useToast('Field edited!', 'bottom');
+    await syncFieldsWithDb();
+  }
+}
+provide('onEditBingoField', onEditBingoField);
 
 function onEdit() {
   console.log('edit event caught');
+  editModeEnabled.value = !editModeEnabled.value;
 }
 function onSave() {
   console.log('save event caught');
@@ -60,6 +78,7 @@ async function onReroll() {
 }
 
 const fields = ref<DbBingoField[] | null>(null);
+const editModeEnabled = ref<boolean>(false);
 
 onBeforeMount(async () => {
   const currentSheet = await db.value.selectAllCurrentSheet();

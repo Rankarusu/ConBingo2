@@ -34,3 +34,23 @@ export async function useOpenEditModal(db: DbConnectionWrapper, id: number) {
   }
   return null;
 }
+
+export async function useOpenEditCurrentModal(
+  db: DbConnectionWrapper,
+  id: number
+) {
+  const field = await db.selectCurrentSheetFieldById(id);
+  const modal = await modalController.create({
+    component: FieldEditModal,
+    componentProps: { title: 'Edit Field', fieldText: field.text },
+  });
+  modal.present();
+
+  const { data, role } = await modal.onWillDismiss();
+
+  console.log(data, role);
+  if (role === 'confirm') {
+    return await db.updateCurrentSheetFieldById(id, data);
+  }
+  return null;
+}

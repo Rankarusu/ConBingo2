@@ -156,9 +156,29 @@ export class DbConnectionWrapper {
     return result.values[0] as { id: number; text: string };
   }
 
+  public async selectCurrentSheetFieldById(id: number) {
+    const result = await this.db.query(
+      `SELECT * FROM currentSheet WHERE id = (?)`,
+      [id]
+    );
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+    return result.values[0] as { id: number; text: string };
+  }
+
   public async updateFieldById(id: number, text: string) {
     const result = await this.db.run(
       `UPDATE fields SET text = (?) WHERE id = (?)`,
+      [text, id]
+    );
+    this.commit();
+    return result;
+  }
+
+  public async updateCurrentSheetFieldById(id: number, text: string) {
+    const result = await this.db.run(
+      `UPDATE currentSheet SET text = (?) WHERE id = (?)`,
       [text, id]
     );
     this.commit();

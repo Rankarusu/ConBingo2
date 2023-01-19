@@ -10,6 +10,7 @@
         :text="item.text"
         :read-only="props.readonly"
         :checked="item.checked"
+        :editable="editable"
         @field-checked-event="onFieldCheckedEvent(index)"
       ></BingoField>
     </div>
@@ -22,6 +23,7 @@ import { useToast } from '@/composables/toast';
 import { DbBingoField } from '@/models/DbBingoField';
 import confetti from 'canvas-confetti';
 import { v4 as uuidv4 } from 'uuid';
+import { toRef } from 'vue';
 import BingoField from './BingoField.vue';
 
 const winningRows = [
@@ -45,12 +47,16 @@ const winningRows = [
 interface BingoSheetProps {
   fields: DbBingoField[];
   readonly?: boolean;
+  editable?: boolean;
 }
 const db = useInjectDb();
 
 const props = withDefaults(defineProps<BingoSheetProps>(), {
   readonly: false,
+  editable: false,
 });
+
+const editable = toRef(props, 'editable');
 
 async function onFieldCheckedEvent(position: number) {
   console.log('onFieldCheckedEvent caught.', position);

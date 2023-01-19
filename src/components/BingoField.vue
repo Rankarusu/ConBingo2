@@ -1,9 +1,10 @@
 <template>
   <ion-card
-    :class="{ checked: checked }"
+    :class="{ checked: checked, editable: editable }"
     class="ion-activatable"
     @click="toggleChecked"
   >
+    <ion-icon v-show="editable" :icon="create"></ion-icon>
     <ion-card-content>{{ props.text }}</ion-card-content>
     <ion-ripple-effect v-if="!props.readonly"></ion-ripple-effect>
   </ion-card>
@@ -11,31 +12,43 @@
 
 <script setup lang="ts">
 import { IonCard, IonCardContent, IonRippleEffect } from '@ionic/vue';
-import { ref } from 'vue';
+import { create } from 'ionicons/icons';
+import { inject, ref, toRef } from 'vue';
 import { useInjectToggleCheckedInDb } from '../composables/bingo';
+
 interface BingoFieldProps {
   text: string;
   readonly?: boolean;
+  editable?: boolean;
   checked?: boolean;
   position: number;
 }
-
+const onEditBingoField = inject('onEditBingoField');
 const toggleCheckedInDb = useInjectToggleCheckedInDb();
 
 async function toggleChecked() {
-  if (!props.readonly) {
-    checked.value = !checked.value;
-    await toggleCheckedInDb(props.position, checked.value);
+  if (props.readonly) {
+    return;
   }
+  if (editable.value) {
+    await onEditBingoField(props.position);
+    return;
+  }
+
+  checked.value = !checked.value;
+  await toggleCheckedInDb(props.position, checked.value);
   if (checked.value === true) {
     emit('fieldCheckedEvent', props.position);
   }
 }
 
 const props = withDefaults(defineProps<BingoFieldProps>(), {
+  editable: false,
   readonly: false,
   checked: false,
 });
+
+const editable = toRef(props, 'editable');
 
 const emit = defineEmits(['fieldCheckedEvent']);
 
@@ -62,6 +75,19 @@ ion-card.checked {
 
   background-color: rgba(var(--ion-color-primary-rgb), 0.2);
   transition: 0.3s;
+}
+
+ion-card.editable {
+  opacity: 0.7;
+  box-shadow: inset 0px 0px 0px 0.125rem transparent,
+    rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px,
+    rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+}
+
+ion-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
 }
 
 ion-card-content {
