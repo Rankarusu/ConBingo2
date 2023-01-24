@@ -17,8 +17,9 @@
 
       <ion-col>
         <ion-button expand="block" @click="$emit('editEvent')">
-          <ion-icon slot="start" :icon="create"></ion-icon>
-          Edit
+          <ion-icon v-if="editModeEnabled" slot="start" :icon="play"></ion-icon>
+          <ion-icon v-else slot="start" :icon="create"></ion-icon>
+          {{ editModeEnabled ? 'Play' : 'Edit' }}
         </ion-button>
       </ion-col>
     </ion-row>
@@ -27,7 +28,15 @@
 
 <script setup lang="ts">
 import { IonButton, IonCol, IonGrid, IonIcon, IonRow } from '@ionic/vue';
-import { create, reload, save } from 'ionicons/icons';
+import { create, reload, save, play } from 'ionicons/icons';
+import { toRef } from 'vue';
+
+interface PlayButtonBoxProps {
+  editModeEnabled: boolean;
+}
+
+const props = defineProps<PlayButtonBoxProps>();
+const editModeEnabled = toRef(props, 'editModeEnabled');
 
 defineEmits(['rerollEvent', 'saveEvent', 'editEvent']);
 </script>

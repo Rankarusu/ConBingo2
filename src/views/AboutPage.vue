@@ -1,7 +1,7 @@
 <template>
   <PageWrapper title="About">
     <ion-content :fullscreen="true">
-      <ion-card>
+      <ion-card class="ion-activatable">
         <ion-card-header>
           <ion-card-title>About this App</ion-card-title>
           <ion-card-subtitle>Version</ion-card-subtitle>
@@ -24,6 +24,8 @@
           <br />
           Thanks for downloading!
         </ion-card-content>
+        <ion-ripple-effect></ion-ripple-effect>
+
         <!--                                                                                                                                   
                   ████████                                  
                 ██        ██                                
@@ -61,6 +63,7 @@ import {
   IonCardSubtitle,
   IonButton,
   IonContent,
+  IonRippleEffect,
   IonIcon,
 } from '@ionic/vue';
 

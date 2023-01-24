@@ -11,6 +11,7 @@
         </ion-row>
         <ion-row>
           <PlayButtonBox
+            :edit-mode-enabled="editModeEnabled"
             @edit-event="onEdit"
             @save-event="onSave"
             @reroll-event="onReroll"
@@ -39,7 +40,6 @@ import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import { onBeforeMount, provide, ref } from 'vue';
 
 const db = useInjectDb();
-console.log(db);
 
 async function toggleCheckedInDb(position: number, checked: boolean) {
   await db.currentSheet.setChecked(position, checked);
@@ -60,17 +60,21 @@ async function onEditBingoField(id: number) {
     await syncFieldsWithDb();
   }
 }
+
 provide('onEditBingoField', onEditBingoField);
 
-function onEdit() {
+async function onEdit() {
   console.log('edit event caught');
+  await syncFieldsWithDb();
   editModeEnabled.value = !editModeEnabled.value;
 }
+
 function onSave() {
   console.log('save event caught');
   useSaveSheet(db);
   useToast('Sheet saved!', 'bottom');
 }
+
 async function onReroll() {
   console.log('reroll event caught');
   const newSheet = await useInitializeSheet(db);
