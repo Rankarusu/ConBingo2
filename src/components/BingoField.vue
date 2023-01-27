@@ -11,10 +11,13 @@
 </template>
 
 <script setup lang="ts">
-import { IonCard, IonCardContent, IonRippleEffect, IonIcon } from '@ionic/vue';
+import { IonCard, IonCardContent, IonIcon, IonRippleEffect } from '@ionic/vue';
 import { create } from 'ionicons/icons';
-import { inject, ref, toRef } from 'vue';
-import { useInjectToggleCheckedInDb } from '../composables/bingo';
+import { ref, toRef } from 'vue';
+import {
+  useInjectOnEditBingoField,
+  useInjectToggleCheckedInDb,
+} from '../composables/bingo';
 
 interface BingoFieldProps {
   text: string;
@@ -23,8 +26,6 @@ interface BingoFieldProps {
   checked?: boolean;
   position: number;
 }
-const onEditBingoField = inject('onEditBingoField');
-const toggleCheckedInDb = useInjectToggleCheckedInDb();
 
 async function toggleChecked() {
   if (props.readonly) {
@@ -47,6 +48,15 @@ const props = withDefaults(defineProps<BingoFieldProps>(), {
   readonly: false,
   checked: false,
 });
+
+let onEditBingoField: (id: number) => Promise<void>;
+let toggleCheckedInDb: (position: number, checked: boolean) => Promise<void>;
+
+if (!props.readonly) {
+  //we inject these conditionally because our fields do not need functionality in the savedSheets page
+  onEditBingoField = useInjectOnEditBingoField();
+  toggleCheckedInDb = useInjectToggleCheckedInDb();
+}
 
 const editable = toRef(props, 'editable');
 

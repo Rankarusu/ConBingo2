@@ -3,7 +3,7 @@
     <ion-content :fullscreen="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
-          <SavedSheetSlider></SavedSheetSlider>
+          <SavedSheetSlider v-if="sheets" :sheets="sheets"></SavedSheetSlider>
         </ion-row>
         <ion-row>
           <SavedSheetsButtonBox
@@ -19,11 +19,16 @@
 </template>
 
 <script setup lang="ts">
-import { IonGrid, IonRow, IonContent } from '@ionic/vue';
+import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 
 import PageWrapper from '@/components/PageWrapper.vue';
-import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
 import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
+import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
+import { useInjectDb } from '@/composables/database';
+import { BingoSheet } from '@/models/BingoSheet';
+import { onBeforeMount, ref } from 'vue';
+
+const db = useInjectDb();
 
 function onLoad() {
   console.log('load event caught');
@@ -37,6 +42,14 @@ function onImport() {
 function onExport() {
   console.log('export event caught');
 }
+
+const sheets = ref<BingoSheet[] | null>(null);
+
+onBeforeMount(async () => {
+  const savedSheets = await db.savedSheets.findAll();
+  console.log(savedSheets);
+  sheets.value = savedSheets;
+});
 </script>
 
 <style scoped>

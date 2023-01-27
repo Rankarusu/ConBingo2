@@ -8,7 +8,7 @@
         :key="uuidv4()"
         :position="index"
         :text="item.text"
-        :read-only="props.readonly"
+        :readonly="props.readonly"
         :checked="item.checked"
         :editable="editable"
         @field-checked-event="onFieldCheckedEvent(index)"

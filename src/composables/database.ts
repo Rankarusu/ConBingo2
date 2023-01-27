@@ -1,11 +1,12 @@
 import { DbBingoField } from '@/models/DbBingoField';
+import { BingoSheet } from '@/models/BingoSheet';
 import {
   CapacitorSQLite,
   SQLiteConnection,
   SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
-import { inject, InjectionKey, Ref } from 'vue';
+import { inject, InjectionKey } from 'vue';
 
 export const DB_INJECTION_KEY: InjectionKey<DbConnectionWrapper> = Symbol('DB');
 
@@ -80,10 +81,6 @@ export class DbConnectionWrapper extends DbConnected {
 
   public async open() {
     await this.db.open();
-    // if (!this.db.isDBOpen()) {
-    // } else {
-    //   console.log('DbConnectionWrapper is already open');
-    // }
   }
 
   public async close() {
@@ -316,6 +313,22 @@ export class CurrentSheetRepository extends BaseRepository {
 }
 
 export class SavedSheetsRepository extends BaseRepository {
+  public async findAll() {
+    const result = await this.db.query(`SELECT * FROM savedSheets`);
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+
+    const bingoSheets = result.values.map((sheet) => {
+      const obj = {
+        id: sheet.id,
+        content: JSON.parse(sheet.content),
+      } as BingoSheet;
+      return obj;
+    });
+    return bingoSheets;
+  }
+
   public async create(fields: string) {
     const result = await this.db.run(
       `INSERT INTO savedSHeets (content) VALUES (?);`,

@@ -17,6 +17,18 @@ export function useInjectToggleCheckedInDb() {
   return toggleCheckedInDb;
 }
 
+export const ON_EDIT_BINGO_FIELD_INJECTION_KEY: InjectionKey<
+  (id: number) => Promise<void>
+> = Symbol('onEditBingoField');
+
+export function useInjectOnEditBingoField() {
+  const onEditBingoField = inject(ON_EDIT_BINGO_FIELD_INJECTION_KEY, null);
+  if (!onEditBingoField) {
+    throw new Error('injected function not defined');
+  }
+  return onEditBingoField;
+}
+
 export async function useInitializeSheet(db: DbConnectionWrapper) {
   const fields = await db.fields.findAll();
 

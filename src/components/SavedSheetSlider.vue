@@ -9,8 +9,8 @@
       :space-between="50"
       @active-index-change="idx"
     >
-      <swiper-slide v-for="n in 10" :key="n">
-        <BingoSheet :read-only="true"></BingoSheet>
+      <swiper-slide v-for="(sheet, index) in props.sheets" :key="index">
+        <BingoSheet :fields="sheet.content" :readonly="true"></BingoSheet>
       </swiper-slide>
     </SwiperComponent>
   </div>
@@ -28,6 +28,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import BingoSheet from './BingoSheet.vue';
+import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
 
 const modules = [Navigation, Pagination, A11y];
 
@@ -35,6 +36,12 @@ const idx = (swiper: Swiper) => {
   console.log(swiper.activeIndex);
   console.log(swiper.slides[swiper.activeIndex]);
 };
+
+interface SavedSheetsProps {
+  sheets: BingoSheetModel[];
+}
+
+const props = defineProps<SavedSheetsProps>();
 </script>
 
 <style scoped>
@@ -45,7 +52,7 @@ const idx = (swiper: Swiper) => {
   width: 100%;
 }
 .swiper {
-  padding: 10px;
+  padding: 20px 10px;
   --swiper-theme-color: var(--ion-color-primary);
 }
 

@@ -34,7 +34,6 @@ import {
   defineCustomElements as jeepSqlite,
 } from 'jeep-sqlite/loader';
 import { DbConnectionWrapper } from './composables/database';
-import { createPinia } from 'pinia';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -43,8 +42,7 @@ applyPolyfills().then(() => {
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
-  const pinia = createPinia();
-  const app = createApp(App).use(IonicVue).use(router).use(pinia);
+  const app = createApp(App).use(IonicVue).use(router);
 
   try {
     if (platform === 'web') {

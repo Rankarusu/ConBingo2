@@ -27,6 +27,7 @@ import BingoSheet from '@/components/BingoSheet.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import PlayButtonBox from '@/components/PlayButtonBox.vue';
 import {
+  ON_EDIT_BINGO_FIELD_INJECTION_KEY,
   TOGGLE_CHECKED_IN_DB_INJECTION_KEY,
   useInitializeSheet,
   useSaveSheet,
@@ -46,12 +47,6 @@ async function toggleCheckedInDb(position: number, checked: boolean) {
 }
 provide(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, toggleCheckedInDb);
 
-async function syncFieldsWithDb() {
-  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  const dbFields = await db.currentSheet.findAll();
-  fields.value = dbFields;
-}
-
 async function onEditBingoField(id: number) {
   console.log('onEditBingoField has been caught', id);
   const changes = await useOpenEditCurrentModal(db, id);
@@ -60,8 +55,7 @@ async function onEditBingoField(id: number) {
     await syncFieldsWithDb();
   }
 }
-
-provide('onEditBingoField', onEditBingoField);
+provide(ON_EDIT_BINGO_FIELD_INJECTION_KEY, onEditBingoField);
 
 async function onEdit() {
   console.log('edit event caught');
@@ -82,20 +76,26 @@ async function onReroll() {
   fields.value = newSheet;
 }
 
+async function syncFieldsWithDb() {
+  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
+  const dbFields = await db.currentSheet.findAll();
+  fields.value = dbFields;
+}
+
 const fields = ref<DbBingoField[] | null>(null);
 const editModeEnabled = ref<boolean>(false);
 
 onBeforeMount(async () => {
   const currentSheet = await db.currentSheet.findAll();
 
-  console.log(currentSheet.length);
+  // console.log(currentSheet.length);
   if (currentSheet.length < 25) {
     const newSheet = await useInitializeSheet(db);
     await useSetCurrentSheet(db, newSheet);
     fields.value = newSheet;
 
-    const currentSheet = await db.currentSheet.findAll();
-    console.log(currentSheet);
+    // const currentSheet = await db.currentSheet.findAll();
+    // console.log(currentSheet);
   } else {
     fields.value = currentSheet;
   }
