@@ -13,8 +13,6 @@
     </ion-header>
     <ion-content :fullscreen="true">
       <BingoFieldList
-        v-if="fields"
-        :fields="fields"
         :filter="searchTerm"
         @reset-fields-event="onResetFields"
       ></BingoFieldList>
@@ -38,10 +36,10 @@
 import BingoFieldList from '@/components/BingoFieldList.vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import { useResetFieldsAlert } from '@/composables/alert';
-import { useInjectDb } from '@/composables/database';
 import { useOpenAddModal, useOpenEditModal } from '@/composables/modal';
 import { useToast } from '@/composables/toast';
-import { DbBingoField } from '@/models/DbBingoField';
+import { BingoField } from '@/models/BingoField';
+import { useFieldsStore } from '@/stores/fieldsStore';
 import { IonSearchbarCustomEvent } from '@ionic/core';
 import {
   IonContent,
@@ -56,49 +54,38 @@ import {
   SearchbarChangeEventDetail,
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
-import { computed, onBeforeMount, provide, ref } from 'vue';
-
-const db = useInjectDb();
-
-async function syncFieldsWithDb() {
-  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  const dbFields = await db.fields.findAllAlphabetical();
-  fields.value = dbFields;
-}
+import { storeToRefs } from 'pinia';
+import { computed, provide, ref } from 'vue';
 
 async function onEditField(id: number) {
   console.log('onEditField has been caught', id);
-  const changes = await useOpenEditModal(db, id);
+  const changes = await useOpenEditModal(id);
   if (changes) {
     useToast('Field edited!', 'bottom');
-    await syncFieldsWithDb();
   }
 }
 
 async function onDeleteField(id: number) {
   console.log('onEditField has been caught', id);
-  const changes = await db.fields.deleteById(id);
+  const changes = await store.deleteOneById(id);
   if (changes) {
     useToast('Field deleted!', 'bottom');
-    await syncFieldsWithDb();
   }
 }
 
 async function onAddField() {
   console.log('onAddField has been caught');
-  const changes = await useOpenAddModal(db);
+  const changes = await useOpenAddModal();
   if (changes) {
     useToast('Field added!', 'bottom');
-    await syncFieldsWithDb();
   }
 }
 
 async function onResetFields() {
   console.log('reset fields event caught');
-  const changes = await useResetFieldsAlert(db);
+  const changes = await useResetFieldsAlert();
   if (changes) {
     useToast('Fields have been reset!', 'middle');
-    await syncFieldsWithDb();
   }
 }
 
@@ -106,7 +93,8 @@ async function onResetFields() {
 provide('onEditField', onEditField);
 provide('onDeleteField', onDeleteField);
 
-const fields = ref<DbBingoField[]>();
+const store = useFieldsStore();
+const { fields } = storeToRefs(store);
 
 const searchTerm = ref<string>('');
 
@@ -118,7 +106,7 @@ function updateSearchTerm(
 
 const listSize = computed(() => {
   return fields.value?.filter(
-    (field: DbBingoField) =>
+    (field: BingoField) =>
       field.text.toLowerCase().indexOf(searchTerm.value) > -1
   ).length;
 });
@@ -132,11 +120,6 @@ const footerText = computed(() => {
     text = `Displaying ${listSize.value} of ${maxSize} fields`;
   }
   return text;
-});
-
-onBeforeMount(async () => {
-  const dbFields = await db.fields.findAllAlphabetical();
-  fields.value = dbFields;
 });
 
 defineEmits(['addNewFieldEvent']);

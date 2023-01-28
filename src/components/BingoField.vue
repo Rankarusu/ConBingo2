@@ -63,6 +63,7 @@ const editable = toRef(props, 'editable');
 const emit = defineEmits(['fieldCheckedEvent']);
 
 const checked = ref<boolean>(props.checked);
+console.log(checked.value);
 </script>
 
 <style scoped>

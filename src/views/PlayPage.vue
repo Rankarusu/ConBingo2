@@ -3,11 +3,7 @@
     <ion-content :fullscreen="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
-          <BingoSheet
-            v-if="fields"
-            :fields="fields"
-            :editable="editModeEnabled"
-          ></BingoSheet>
+          <BingoSheet :editable="editModeEnabled"></BingoSheet>
         </ion-row>
         <ion-row>
           <PlayButtonBox
@@ -29,77 +25,61 @@ import PlayButtonBox from '@/components/PlayButtonBox.vue';
 import {
   ON_EDIT_BINGO_FIELD_INJECTION_KEY,
   TOGGLE_CHECKED_IN_DB_INJECTION_KEY,
-  useInitializeSheet,
-  useSaveSheet,
-  useSetCurrentSheet,
+  useGenerateSheet,
 } from '@/composables/bingo';
-import { useInjectDb } from '@/composables/database';
 import { useOpenEditCurrentModal } from '@/composables/modal';
 import { useToast } from '@/composables/toast';
-import { DbBingoField } from '@/models/DbBingoField';
+import { useCurrentSheetStore } from '@/stores/currentSheetStore';
+import { useFieldsStore } from '@/stores/fieldsStore';
+import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
 import { IonContent, IonGrid, IonRow } from '@ionic/vue';
-import { onBeforeMount, provide, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { provide, ref } from 'vue';
 
-const db = useInjectDb();
+const currentSheetStore = useCurrentSheetStore();
+const { fields } = storeToRefs(currentSheetStore);
+
+const fieldsStore = useFieldsStore();
+
+const savedSheetsStore = useSavedSheetsStore();
+// const savedSheetsStoreRe
 
 async function toggleCheckedInDb(position: number, checked: boolean) {
-  await db.currentSheet.setChecked(position, checked);
+  await currentSheetStore.setChecked(position, checked);
 }
 provide(TOGGLE_CHECKED_IN_DB_INJECTION_KEY, toggleCheckedInDb);
 
 async function onEditBingoField(id: number) {
   console.log('onEditBingoField has been caught', id);
-  const changes = await useOpenEditCurrentModal(db, id);
+  const changes = await useOpenEditCurrentModal(id);
   if (changes) {
     useToast('Field edited!', 'bottom');
-    await syncFieldsWithDb();
   }
 }
 provide(ON_EDIT_BINGO_FIELD_INJECTION_KEY, onEditBingoField);
 
 async function onEdit() {
   console.log('edit event caught');
-  await syncFieldsWithDb();
   editModeEnabled.value = !editModeEnabled.value;
 }
 
 function onSave() {
   console.log('save event caught');
-  useSaveSheet(db);
+  const json = JSON.stringify(fields.value);
+  savedSheetsStore.create(json);
   useToast('Sheet saved!', 'bottom');
 }
 
 async function onReroll() {
   console.log('reroll event caught');
-  const newSheet = await useInitializeSheet(db);
-  await useSetCurrentSheet(db, newSheet);
-  fields.value = newSheet;
+  const newSheet = await useGenerateSheet(fieldsStore.fields);
+  currentSheetStore.fields = []; //to force a rerender TODO: make this more graceful.
+  //vue tries to be smart when it comes to rerendering of lists but it does give us some trouble in our use case
+
+  currentSheetStore.reset(newSheet);
 }
 
-async function syncFieldsWithDb() {
-  //since we use the db as our store we need to refetch data once it has changed, but only if it has.
-  const dbFields = await db.currentSheet.findAll();
-  fields.value = dbFields;
-}
-
-const fields = ref<DbBingoField[] | null>(null);
 const editModeEnabled = ref<boolean>(false);
-
-onBeforeMount(async () => {
-  const currentSheet = await db.currentSheet.findAll();
-
-  // console.log(currentSheet.length);
-  if (currentSheet.length < 25) {
-    const newSheet = await useInitializeSheet(db);
-    await useSetCurrentSheet(db, newSheet);
-    fields.value = newSheet;
-
-    // const currentSheet = await db.currentSheet.findAll();
-    // console.log(currentSheet);
-  } else {
-    fields.value = currentSheet;
-  }
-});
 </script>
 
 <style scoped>

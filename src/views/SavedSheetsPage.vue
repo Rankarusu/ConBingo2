@@ -24,11 +24,8 @@ import { IonContent, IonGrid, IonRow } from '@ionic/vue';
 import PageWrapper from '@/components/PageWrapper.vue';
 import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
 import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
-import { useInjectDb } from '@/composables/database';
-import { BingoSheet } from '@/models/BingoSheet';
-import { onBeforeMount, ref } from 'vue';
-
-const db = useInjectDb();
+import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
+import { storeToRefs } from 'pinia';
 
 function onLoad() {
   console.log('load event caught');
@@ -42,14 +39,8 @@ function onImport() {
 function onExport() {
   console.log('export event caught');
 }
-
-const sheets = ref<BingoSheet[] | null>(null);
-
-onBeforeMount(async () => {
-  const savedSheets = await db.savedSheets.findAll();
-  console.log(savedSheets);
-  sheets.value = savedSheets;
-});
+const store = useSavedSheetsStore();
+const { sheets } = storeToRefs(store);
 </script>
 
 <style scoped>

@@ -3,26 +3,27 @@
 <template>
   <div class="wrapper">
     <div class="bingo-grid">
-      <BingoField
-        v-for="(item, index) in props.fields"
-        :key="uuidv4()"
-        :position="index"
-        :text="item.text"
-        :readonly="props.readonly"
-        :checked="item.checked"
-        :editable="editable"
-        @field-checked-event="onFieldCheckedEvent(index)"
-      ></BingoField>
+      <TransitionGroup appear name="fade">
+        <BingoField
+          v-for="(item, index) in fields"
+          :key="index"
+          :position="index"
+          :text="item.text"
+          :readonly="props.readonly"
+          :checked="item.checked"
+          :editable="editable"
+          @field-checked-event="onFieldCheckedEvent(index)"
+        ></BingoField>
+      </TransitionGroup>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useInjectDb } from '@/composables/database';
 import { useToast } from '@/composables/toast';
-import { DbBingoField } from '@/models/DbBingoField';
+import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import confetti from 'canvas-confetti';
-import { v4 as uuidv4 } from 'uuid';
+import { storeToRefs } from 'pinia';
 import { toRef } from 'vue';
 import BingoField from './BingoField.vue';
 
@@ -45,11 +46,12 @@ const winningRows = [
 ];
 
 interface BingoSheetProps {
-  fields: DbBingoField[];
   readonly?: boolean;
   editable?: boolean;
 }
-const db = useInjectDb();
+
+const store = useCurrentSheetStore();
+const { fields } = storeToRefs(store);
 
 const props = withDefaults(defineProps<BingoSheetProps>(), {
   readonly: false,
@@ -77,10 +79,10 @@ function win() {
 }
 
 async function checkWin(id: number) {
-  const checkedIds = await db.currentSheet.findAllChecked();
+  const checkedIds = store.checkedIds;
 
   const result = winningRows
-    .filter((row) => row.every((entry) => checkedIds.includes(entry)))
+    .filter((row) => row.every((entry) => checkedIds?.includes(entry)))
     .find((arr) => arr.includes(id)); // see if the newly selected field is in the winning row
   return result;
 }
@@ -105,5 +107,16 @@ async function checkWin(id: number) {
   flex-grow: 1;
   align-items: center;
   width: 100%;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+
+  /* transform: translateX(30px); */
 }
 </style>

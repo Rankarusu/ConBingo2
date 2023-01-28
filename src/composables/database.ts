@@ -1,5 +1,6 @@
-import { DbBingoField } from '@/models/DbBingoField';
+import { BingoField } from '@/models/BingoField';
 import { BingoSheet } from '@/models/BingoSheet';
+import { CheckableBingoField } from '@/models/CheckableBingoField';
 import {
   CapacitorSQLite,
   SQLiteConnection,
@@ -132,23 +133,17 @@ export class FieldsRepository extends BaseRepository {
     if (!fields.values) {
       throw new Error('values not defined');
     }
-    //SQLite saves booleans as integers, so we cast them to a bool here.
-    fields.values.map(
-      (field: DbBingoField) => (field.checked = !!field.checked)
-    );
-    return fields.values as DbBingoField[];
+
+    return fields.values as BingoField[];
   }
 
-  public async findAllAlphabetical() {
-    const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
-    if (!fields.values) {
-      throw new Error('values not defined');
-    }
-    fields.values.map(
-      (field: DbBingoField) => (field.checked = !!field.checked)
-    );
-    return fields.values as DbBingoField[];
-  }
+  // public async findAllAlphabetical() {
+  //   const fields = await this.db.query(`SELECT * FROM fields ORDER BY text`);
+  //   if (!fields.values) {
+  //     throw new Error('values not defined');
+  //   }
+  //   return fields.values as BingoField[];
+  // }
 
   public async findOneById(id: number) {
     const result = await this.db.query(`SELECT * FROM fields WHERE id = (?)`, [
@@ -157,7 +152,7 @@ export class FieldsRepository extends BaseRepository {
     if (!result.values) {
       throw new Error('values not defined');
     }
-    return result.values[0] as { id: number; text: string };
+    return result.values[0] as BingoField;
   }
 
   public async updateOneById(id: number, text: string) {
@@ -169,13 +164,13 @@ export class FieldsRepository extends BaseRepository {
     return result;
   }
 
-  public async deleteAll() {
-    const result = await this.db.execute(`DELETE FROM fields`);
-    this.commit();
-    return result;
-  }
+  // public async deleteAll() {
+  //   const result = await this.db.execute(`DELETE FROM fields`);
+  //   this.commit();
+  //   return result;
+  // }
 
-  public async deleteById(id: number) {
+  public async deleteOneById(id: number) {
     const result = await this.db.run(`DELETE FROM fields WHERE id = (?)`, [id]);
     await this.commit();
     return result;
@@ -190,6 +185,8 @@ export class FieldsRepository extends BaseRepository {
   }
 
   public async reset() {
+    await this.db.execute(`DELETE FROM fields`);
+
     const result = await this.db.execute(`
   INSERT INTO fields (text) VALUES
   ("Someone fixing their cosplay on the course"),
@@ -249,17 +246,19 @@ export class CurrentSheetRepository extends BaseRepository {
   constructor(db: SQLiteDBConnection, sqlite: SQLiteConnection) {
     super(db, sqlite);
   }
+
   public async findAll() {
     const fields = await this.db.query(`SELECT * FROM currentSheet`);
     if (!fields.values) {
       throw new Error('values not defined');
     }
     fields.values.map(
-      (field: DbBingoField) => (field.checked = !!field.checked)
+      (field: CheckableBingoField) => (field.checked = !!field.checked)
     );
 
-    return fields.values as DbBingoField[];
+    return fields.values as CheckableBingoField[];
   }
+
   public async findOneById(id: number) {
     const result = await this.db.query(
       `SELECT * FROM currentSheet WHERE id = (?)`,
@@ -268,8 +267,9 @@ export class CurrentSheetRepository extends BaseRepository {
     if (!result.values) {
       throw new Error('values not defined');
     }
-    return result.values[0] as { id: number; text: string };
+    return result.values[0] as CheckableBingoField;
   }
+
   public async updateOneById(id: number, text: string) {
     const result = await this.db.run(
       `UPDATE currentSheet SET text = (?) WHERE id = (?)`,
@@ -278,6 +278,7 @@ export class CurrentSheetRepository extends BaseRepository {
     this.commit();
     return result;
   }
+
   public async findAllChecked() {
     const ids = await this.db.query(
       `SELECT id FROM currentSheet WHERE checked = 1`
@@ -289,12 +290,30 @@ export class CurrentSheetRepository extends BaseRepository {
 
     return result;
   }
-  public async deleteAll() {
+
+  public async reset(fields: CheckableBingoField[]) {
+    if (fields.length !== 25) {
+      throw new Error(`Cannot create currentSheet of size ${fields.length}`);
+    }
+    await this.deleteAll();
+
+    for (let i = 0; i < fields.length; i++) {
+      await this.create({
+        id: i,
+        text: fields[i].text,
+        checked: fields[i].checked,
+      } as CheckableBingoField);
+    }
+    await this.commit();
+  }
+
+  private async deleteAll() {
     const result = await this.db.execute(`DELETE FROM currentSheet;`);
     await this.commit();
     return result;
   }
-  public async create(field: DbBingoField) {
+
+  private async create(field: CheckableBingoField) {
     const result = await this.db.run(
       `INSERT INTO currentSheet (id,text,checked) VALUES (?,?,?);`,
       [field.id, field.text, field.checked || false]
@@ -302,6 +321,7 @@ export class CurrentSheetRepository extends BaseRepository {
     //commit when everything is done. not here.
     return result;
   }
+
   public async setChecked(position: number, checked: boolean) {
     const result = await this.db.run(
       `UPDATE currentSheet SET checked = ? WHERE id = ?;`,

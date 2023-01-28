@@ -1,8 +1,14 @@
 import FieldEditModal from '@/components/FieldEditModal.vue';
+import { useCurrentSheetStore } from '@/stores/currentSheetStore';
+import { useFieldsStore } from '@/stores/fieldsStore';
 import { modalController } from '@ionic/vue';
 import { DbConnectionWrapper } from './database';
+import { useToast } from './toast';
 
-export async function useOpenAddModal(db: DbConnectionWrapper) {
+const fieldsStore = useFieldsStore();
+const currentSheetStore = useCurrentSheetStore();
+
+export async function useOpenAddModal() {
   const modal = await modalController.create({
     component: FieldEditModal,
     componentProps: { title: 'Add Field' },
@@ -13,16 +19,16 @@ export async function useOpenAddModal(db: DbConnectionWrapper) {
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.fields.create(data);
+    return await fieldsStore.create(data);
   }
   return null;
 }
 
-export async function useOpenEditModal(db: DbConnectionWrapper, id: number) {
-  const field = await db.fields.findOneById(id);
+export async function useOpenEditModal(id: number) {
+  const field = await fieldsStore.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,
-    componentProps: { title: 'Edit Field', fieldText: field.text },
+    componentProps: { title: 'Edit Field', fieldText: field?.text },
   });
   modal.present();
 
@@ -30,19 +36,16 @@ export async function useOpenEditModal(db: DbConnectionWrapper, id: number) {
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.fields.updateOneById(id, data);
+    return await fieldsStore.updateOneById(id, data);
   }
   return null;
 }
 
-export async function useOpenEditCurrentModal(
-  db: DbConnectionWrapper,
-  id: number
-) {
-  const field = await db.currentSheet.findOneById(id);
+export async function useOpenEditCurrentModal(id: number) {
+  const field = await currentSheetStore.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,
-    componentProps: { title: 'Edit Field', fieldText: field.text },
+    componentProps: { title: 'Edit Field', fieldText: field?.text },
   });
   modal.present();
 
@@ -50,7 +53,7 @@ export async function useOpenEditCurrentModal(
 
   console.log(data, role);
   if (role === 'confirm') {
-    return await db.currentSheet.updateOneById(id, data);
+    return await currentSheetStore.updateOneById(id, data);
   }
   return null;
 }

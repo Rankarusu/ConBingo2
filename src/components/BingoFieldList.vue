@@ -2,7 +2,7 @@
   <ion-list>
     <TransitionGroup name="list">
       <BingoFieldListItem
-        v-for="item in props.fields"
+        v-for="item in sortedFields"
         v-show="filterField(item.text)"
         :id="item.id!"
         :key="item.id"
@@ -17,8 +17,9 @@
 </template>
 
 <script lang="ts" setup>
-import { DbBingoField } from '@/models/DbBingoField';
-import { IonList, IonButton, IonIcon } from '@ionic/vue';
+import { useFieldsStore } from '@/stores/fieldsStore';
+import { IonButton, IonList } from '@ionic/vue';
+import { storeToRefs } from 'pinia';
 //false positive
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TransitionGroup } from 'vue';
@@ -26,8 +27,10 @@ import BingoFieldListItem from './BingoFieldListItem.vue';
 
 defineEmits(['resetFieldsEvent']);
 
+const store = useFieldsStore();
+const { sortedFields } = storeToRefs(store);
+
 interface BingoFieldListProps {
-  fields?: DbBingoField[];
   filter: string;
 }
 const props = defineProps<BingoFieldListProps>();
@@ -52,7 +55,6 @@ ion-button {
   opacity: 0;
   transform: translateX(30px);
 }
-/*  */
 .list-leave-active {
   position: absolute;
 }

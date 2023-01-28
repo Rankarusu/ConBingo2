@@ -1,7 +1,9 @@
+import { useFieldsStore } from '@/stores/fieldsStore';
 import { alertController } from '@ionic/vue';
-import { DbConnectionWrapper } from './database';
 
-export async function useResetFieldsAlert(db: DbConnectionWrapper) {
+const fieldsStore = useFieldsStore();
+
+export async function useResetFieldsAlert() {
   const alert = await alertController.create({
     header: 'Reset Fields',
     message:
@@ -18,8 +20,7 @@ export async function useResetFieldsAlert(db: DbConnectionWrapper) {
   console.log(role);
 
   if (role === 'confirm') {
-    await db.fields.deleteAll();
-    return await db.fields.reset();
+    return await fieldsStore.reset();
   }
   return null;
 }

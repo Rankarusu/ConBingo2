@@ -1,6 +1,6 @@
-import { DbBingoField } from './DbBingoField';
+import { CheckableBingoField } from './CheckableBingoField';
 
 export interface BingoSheet {
   id: number;
-  content: DbBingoField[];
+  content: CheckableBingoField[];
 }

@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { createPinia } from 'pinia';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -34,6 +35,10 @@ import {
   defineCustomElements as jeepSqlite,
 } from 'jeep-sqlite/loader';
 import { DbConnectionWrapper } from './composables/database';
+import { useSavedSheetsStore } from './stores/savedSheetsStore';
+import { useFieldsStore } from './stores/fieldsStore';
+import { useCurrentSheetStore } from './stores/currentSheetStore';
+import { useGenerateSheet } from './composables/bingo';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -42,7 +47,8 @@ applyPolyfills().then(() => {
 window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
-  const app = createApp(App).use(IonicVue).use(router);
+  const pinia = createPinia();
+  const app = createApp(App).use(IonicVue).use(router).use(pinia);
 
   try {
     if (platform === 'web') {
@@ -56,8 +62,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     // here you can initialize some database schema if required
 
     const db = await DbConnectionWrapper.create();
-
     await db.open();
+
     console.log('db opened in main.ts');
     //TODO: use JSON for importing and validate it here.
     const res = await db.createTables();
@@ -66,23 +72,36 @@ window.addEventListener('DOMContentLoaded', async () => {
       throw new Error(`Error: execute failed`);
     }
 
-    const fields = await db.fields.findAll();
-    const currentSheet = await db.currentSheet.findAll();
-
-    // if (currentSheet.length < 25) {
-    //   const newSheet = await useInitializeSheet(db);
-    //   await useSetCurrentSheet(db, newSheet);
-    // }
-
-    console.log(fields);
-    console.log(currentSheet);
+    let fields = await db.fields.findAll();
     //fill the db with our predefined fields if there are none.
     if (!fields.length) {
       await db.fields.reset();
       console.log('imported fields');
     }
+    fields = await db.fields.findAll();
+    console.log(fields);
+
+    const currentSheet = await db.currentSheet.findAll();
+
+    if (currentSheet.length < 25) {
+      const newSheet = await useGenerateSheet(fields);
+      await db.currentSheet.reset(newSheet);
+    }
+
+    console.log(currentSheet);
+
     app.config.globalProperties.$db = db;
-    // await db.close(); // closing our connection here because we cannot pick it up in a vue component
+
+    const currentSheetStore = useCurrentSheetStore();
+    currentSheetStore.init(db.currentSheet);
+
+    const fieldsStore = useFieldsStore();
+    fieldsStore.init(db.fields);
+
+    const savedSheetsStore = useSavedSheetsStore();
+    savedSheetsStore.init(db.savedSheets);
+
+    console.log('Stores initialized');
 
     router.isReady().then(() => {
       app.mount('#app');
