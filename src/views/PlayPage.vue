@@ -3,7 +3,7 @@
     <ion-content :fullscreen="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
-          <BingoSheet :editable="editModeEnabled"></BingoSheet>
+          <BingoSheet :fields="fields" :editable="editModeEnabled"></BingoSheet>
         </ion-row>
         <ion-row>
           <PlayButtonBox
@@ -38,11 +38,9 @@ import { provide, ref } from 'vue';
 
 const currentSheetStore = useCurrentSheetStore();
 const { fields } = storeToRefs(currentSheetStore);
-
 const fieldsStore = useFieldsStore();
-
 const savedSheetsStore = useSavedSheetsStore();
-// const savedSheetsStoreRe
+const editModeEnabled = ref<boolean>(false);
 
 async function toggleCheckedInDb(position: number, checked: boolean) {
   await currentSheetStore.setChecked(position, checked);
@@ -78,8 +76,6 @@ async function onReroll() {
 
   currentSheetStore.reset(newSheet);
 }
-
-const editModeEnabled = ref<boolean>(false);
 </script>
 
 <style scoped>

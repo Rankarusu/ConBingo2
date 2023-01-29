@@ -26,6 +26,25 @@ interface BingoFieldProps {
   checked?: boolean;
   position: number;
 }
+const props = withDefaults(defineProps<BingoFieldProps>(), {
+  editable: false,
+  readonly: false,
+  checked: false,
+});
+
+const checked = ref<boolean>(props.checked);
+const editable = toRef(props, 'editable');
+
+const emit = defineEmits(['fieldCheckedEvent']);
+
+let onEditBingoField: (id: number) => Promise<void>;
+let toggleCheckedInDb: (position: number, checked: boolean) => Promise<void>;
+
+if (!props.readonly) {
+  //we inject these conditionally because our fields do not need functionality in the savedSheets page
+  onEditBingoField = useInjectOnEditBingoField();
+  toggleCheckedInDb = useInjectToggleCheckedInDb();
+}
 
 async function toggleChecked() {
   if (props.readonly) {
@@ -42,28 +61,6 @@ async function toggleChecked() {
     emit('fieldCheckedEvent', props.position);
   }
 }
-
-const props = withDefaults(defineProps<BingoFieldProps>(), {
-  editable: false,
-  readonly: false,
-  checked: false,
-});
-
-let onEditBingoField: (id: number) => Promise<void>;
-let toggleCheckedInDb: (position: number, checked: boolean) => Promise<void>;
-
-if (!props.readonly) {
-  //we inject these conditionally because our fields do not need functionality in the savedSheets page
-  onEditBingoField = useInjectOnEditBingoField();
-  toggleCheckedInDb = useInjectToggleCheckedInDb();
-}
-
-const editable = toRef(props, 'editable');
-
-const emit = defineEmits(['fieldCheckedEvent']);
-
-const checked = ref<boolean>(props.checked);
-console.log(checked.value);
 </script>
 
 <style scoped>

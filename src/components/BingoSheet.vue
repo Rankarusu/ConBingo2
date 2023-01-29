@@ -20,43 +20,25 @@
 </template>
 
 <script setup lang="ts">
+import { winningRows } from '@/composables/bingo';
 import { useToast } from '@/composables/toast';
+import { CheckableBingoField } from '@/models/CheckableBingoField';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import confetti from 'canvas-confetti';
-import { storeToRefs } from 'pinia';
 import { toRef } from 'vue';
 import BingoField from './BingoField.vue';
 
-const winningRows = [
-  // horizontal
-  [0, 1, 2, 3, 4],
-  [5, 6, 7, 8, 9],
-  [10, 11, 12, 13, 14],
-  [15, 16, 17, 18, 19],
-  [20, 21, 22, 23, 24],
-  //vertical
-  [0, 5, 10, 15, 20],
-  [1, 6, 11, 16, 21],
-  [2, 7, 12, 17, 22],
-  [3, 8, 13, 18, 23],
-  [4, 9, 14, 19, 24],
-  //diagonal
-  [0, 6, 12, 18, 24],
-  [4, 8, 12, 16, 20],
-];
-
 interface BingoSheetProps {
+  fields: CheckableBingoField[];
   readonly?: boolean;
   editable?: boolean;
 }
-
-const store = useCurrentSheetStore();
-const { fields } = storeToRefs(store);
-
 const props = withDefaults(defineProps<BingoSheetProps>(), {
   readonly: false,
   editable: false,
 });
+
+const store = useCurrentSheetStore();
 
 const editable = toRef(props, 'editable');
 
@@ -111,12 +93,10 @@ async function checkWin(id: number) {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 1s ease;
+  transition: opacity 0.1s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-
-  /* transform: translateX(30px); */
 }
 </style>

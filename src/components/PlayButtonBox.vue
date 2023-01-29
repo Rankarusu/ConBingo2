@@ -34,8 +34,8 @@ import { toRef } from 'vue';
 interface PlayButtonBoxProps {
   editModeEnabled: boolean;
 }
-
 const props = defineProps<PlayButtonBoxProps>();
+
 const editModeEnabled = toRef(props, 'editModeEnabled');
 
 defineEmits(['rerollEvent', 'saveEvent', 'editEvent']);

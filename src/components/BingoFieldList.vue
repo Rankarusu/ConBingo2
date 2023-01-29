@@ -2,7 +2,7 @@
   <ion-list>
     <TransitionGroup name="list">
       <BingoFieldListItem
-        v-for="item in sortedFields"
+        v-for="item in reactiveFields"
         v-show="filterField(item.text)"
         :id="item.id!"
         :key="item.id"
@@ -10,6 +10,9 @@
       >
       </BingoFieldListItem>
     </TransitionGroup>
+    <ion-infinite-scroll @ion-infinite="ionInfinite">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
   </ion-list>
   <ion-button expand="block" color="danger" @click="$emit('resetFieldsEvent')">
     Reset Fields
@@ -17,27 +20,56 @@
 </template>
 
 <script lang="ts" setup>
+import { BingoField } from '@/models/BingoField';
 import { useFieldsStore } from '@/stores/fieldsStore';
-import { IonButton, IonList } from '@ionic/vue';
+import {
+  IonButton,
+  IonList,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+} from '@ionic/vue';
+
 import { storeToRefs } from 'pinia';
 //false positive
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { TransitionGroup } from 'vue';
+import { onMounted, reactive, TransitionGroup } from 'vue';
 import BingoFieldListItem from './BingoFieldListItem.vue';
-
-defineEmits(['resetFieldsEvent']);
-
-const store = useFieldsStore();
-const { sortedFields } = storeToRefs(store);
 
 interface BingoFieldListProps {
   filter: string;
 }
 const props = defineProps<BingoFieldListProps>();
 
+const store = useFieldsStore();
+const { sortedFields } = storeToRefs(store);
+
+defineEmits(['resetFieldsEvent']);
+
 function filterField(fieldText: string) {
   return fieldText.toLowerCase().indexOf(props.filter) > -1;
 }
+
+const reactiveFields = reactive<BingoField[]>([]);
+function generateItems() {
+  const start = reactiveFields.length;
+  const end = sortedFields.value.length;
+  console.log(start, end);
+  for (let i = start; i < start + 15; i++) {
+    if (i === end) {
+      break;
+    }
+    reactiveFields.push(sortedFields.value[i]);
+  }
+}
+
+const ionInfinite = (ev: any) => {
+  generateItems();
+  setTimeout(() => ev.target.complete(), 500);
+};
+
+onMounted(() => {
+  generateItems();
+});
 </script>
 
 <style scoped>

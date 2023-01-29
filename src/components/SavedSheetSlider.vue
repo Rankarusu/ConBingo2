@@ -6,9 +6,11 @@
       :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="20"
+      :lazy="{}"
+      :css-mode="true"
       @swiper="onSwiper"
     >
-      <swiper-slide v-for="(sheet, index) in props.sheets" :key="index">
+      <swiper-slide v-for="sheet in props.sheets" :key="sheet.id">
         <BingoSheet :fields="sheet.content" :readonly="true"></BingoSheet>
       </swiper-slide>
     </SwiperComponent>
@@ -17,34 +19,33 @@
 
 <script setup lang="ts">
 // Import Swiper Vue.js components
-import Swiper, { A11y, Navigation, Pagination } from 'swiper'; //need the type for type hints below
+import Swiper, { Navigation, Pagination, Lazy } from 'swiper'; //need the type for type hints below
 import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/vue';
-
 // Import Swiper styles
-import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
+
 import { computed, ref } from 'vue';
 import BingoSheet from './BingoSheet.vue';
+import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
+import { storeToRefs } from 'pinia';
+import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
 
-const modules = [Navigation, Pagination, A11y];
+interface SavedSheetsSliderProps {
+  sheets: BingoSheetModel[];
+}
+const props = defineProps<SavedSheetsSliderProps>();
 
-// const activeSlide = ref<number>(0);
 const swiperInstance = ref<Swiper | null>(null);
 
+const modules = [Navigation, Pagination, Lazy];
 const activeSlide = computed(() => swiperInstance.value?.activeIndex);
 
 function onSwiper(swiper: Swiper) {
   swiperInstance.value = swiper;
 }
-
-interface SavedSheetsProps {
-  sheets: BingoSheetModel[];
-}
-
-const props = defineProps<SavedSheetsProps>();
 </script>
 
 <style scoped>

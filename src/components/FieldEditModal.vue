@@ -52,15 +52,14 @@ interface ModalProps {
   title: string;
   fieldText?: string;
 }
-
 const props = withDefaults(defineProps<ModalProps>(), {
   fieldText: '',
 });
 
 const input = ref<string>(props.fieldText);
 const item = ref<typeof IonItem | null>(null);
-
 const canDismiss = ref<boolean>(false);
+
 function validate(ev: IonTextareaCustomEvent<InputEvent | FocusEvent>) {
   const len = ev.target.value?.length;
   if (len && len > 1) {

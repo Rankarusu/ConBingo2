@@ -29,7 +29,6 @@ interface BingoFieldListItemProps {
   text: string;
   id: number;
 }
-
 const props = defineProps<BingoFieldListItemProps>();
 
 //inject methods from Page to avoid re-emitting events

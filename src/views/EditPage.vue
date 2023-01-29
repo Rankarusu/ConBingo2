@@ -11,7 +11,7 @@
         ></ion-searchbar>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" overflow-scroll="true">
       <BingoFieldList
         :filter="searchTerm"
         @reset-fields-event="onResetFields"
@@ -57,6 +57,12 @@ import { add } from 'ionicons/icons';
 import { storeToRefs } from 'pinia';
 import { computed, provide, ref } from 'vue';
 
+const store = useFieldsStore();
+const { fields } = storeToRefs(store);
+const searchTerm = ref<string>('');
+
+defineEmits(['addNewFieldEvent']);
+
 async function onEditField(id: number) {
   console.log('onEditField has been caught', id);
   const changes = await useOpenEditModal(id);
@@ -93,11 +99,6 @@ async function onResetFields() {
 provide('onEditField', onEditField);
 provide('onDeleteField', onDeleteField);
 
-const store = useFieldsStore();
-const { fields } = storeToRefs(store);
-
-const searchTerm = ref<string>('');
-
 function updateSearchTerm(
   event: IonSearchbarCustomEvent<SearchbarChangeEventDetail>
 ) {
@@ -121,8 +122,6 @@ const footerText = computed(() => {
   }
   return text;
 });
-
-defineEmits(['addNewFieldEvent']);
 </script>
 
 <style scoped></style>
