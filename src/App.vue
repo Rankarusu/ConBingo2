@@ -9,7 +9,7 @@
             <ion-menu-toggle
               v-for="(p, i) in appPages"
               :key="i"
-              :auto-hide="false"
+              :auto-hide="true"
             >
               <ion-item
                 router-direction="root"
@@ -60,8 +60,7 @@ import {
   playOutline,
   playSharp,
 } from 'ionicons/icons';
-import { getCurrentInstance, provide, ref } from 'vue';
-import { DbConnectionWrapper, DB_INJECTION_KEY } from './composables/database';
+import { ref } from 'vue';
 
 const selectedIndex = ref(0);
 const appPages = [
@@ -95,12 +94,6 @@ if (path !== undefined) {
   selectedIndex.value = appPages.findIndex(
     (page) => page.url.toLowerCase().replace('/', '') === path.toLowerCase()
   );
-}
-
-const app = getCurrentInstance();
-if (app != null) {
-  const db: DbConnectionWrapper = app?.appContext.config.globalProperties.$db;
-  provide(DB_INJECTION_KEY, db);
 }
 </script>
 

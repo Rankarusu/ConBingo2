@@ -1,9 +1,8 @@
 import { useFieldsStore } from '@/stores/fieldsStore';
 import { alertController } from '@ionic/vue';
 
-const fieldsStore = useFieldsStore();
-
 export async function useResetFieldsAlert() {
+  const fieldsStore = useFieldsStore();
   const alert = await alertController.create({
     header: 'Reset Fields',
     message:

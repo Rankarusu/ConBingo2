@@ -7,17 +7,7 @@ import {
   SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
-import { inject, InjectionKey } from 'vue';
 
-export const DB_INJECTION_KEY: InjectionKey<DbConnectionWrapper> = Symbol('DB');
-
-export function useInjectDb() {
-  const db = inject(DB_INJECTION_KEY, null);
-  if (!db) {
-    throw new Error('Could not inject DB connection');
-  }
-  return db;
-}
 abstract class DbConnected {
   public db: SQLiteDBConnection;
 
@@ -354,8 +344,16 @@ export class SavedSheetsRepository extends BaseRepository {
       `INSERT INTO savedSHeets (content) VALUES (?);`,
       [fields]
     );
-    this.commit();
+    await this.commit();
 
+    return result;
+  }
+
+  public async deleteOneById(id: number) {
+    const result = await this.db.run(`DELETE FROM savedSheets WHERE id = (?)`, [
+      id,
+    ]);
+    await this.commit();
     return result;
   }
 }

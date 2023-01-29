@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
+import PlayPage from '@/views/PlayPage.vue';
+import EditPage from '@/views/EditPage.vue';
+import SavedSheetsPage from '@/views/SavedSheetsPage.vue';
+import AboutPage from '@/views/AboutPage.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -8,19 +12,19 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/play',
-    component: () => import('../views/PlayPage.vue'),
+    component: PlayPage,
   },
   {
     path: '/edit',
-    component: () => import('../views/EditPage.vue'),
+    component: EditPage,
   },
   {
     path: '/saved-sheets',
-    component: () => import('../views/SavedSheetsPage.vue'),
+    component: SavedSheetsPage,
   },
   {
     path: '/about',
-    component: () => import('../views/AboutPage.vue'),
+    component: AboutPage,
   },
 ];
 

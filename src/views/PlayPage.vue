@@ -1,5 +1,6 @@
 <template>
-  <PageWrapper title="Convention Bingo">
+  <ion-page>
+    <PageHeader title="Convention Bingo" />
     <ion-content :fullscreen="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
@@ -15,12 +16,12 @@
         </ion-row>
       </ion-grid>
     </ion-content>
-  </PageWrapper>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import BingoSheet from '@/components/BingoSheet.vue';
-import PageWrapper from '@/components/PageWrapper.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import PlayButtonBox from '@/components/PlayButtonBox.vue';
 import {
   ON_EDIT_BINGO_FIELD_INJECTION_KEY,
@@ -32,7 +33,7 @@ import { useToast } from '@/composables/toast';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useFieldsStore } from '@/stores/fieldsStore';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
-import { IonContent, IonGrid, IonRow } from '@ionic/vue';
+import { IonContent, IonGrid, IonPage, IonRow } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { provide, ref } from 'vue';
 
@@ -61,10 +62,10 @@ async function onEdit() {
   editModeEnabled.value = !editModeEnabled.value;
 }
 
-function onSave() {
+async function onSave() {
   console.log('save event caught');
   const json = JSON.stringify(fields.value);
-  savedSheetsStore.create(json);
+  await savedSheetsStore.create(json);
   useToast('Sheet saved!', 'bottom');
 }
 

@@ -54,7 +54,7 @@ function generateItems() {
   const start = reactiveFields.length;
   const end = sortedFields.value.length;
   console.log(start, end);
-  for (let i = start; i < start + 15; i++) {
+  for (let i = start; i < start + 8; i++) {
     if (i === end) {
       break;
     }

@@ -1,5 +1,6 @@
 <template>
-  <PageWrapper title="Edit Fields">
+  <ion-page>
+    <PageHeader title="Edit Fields" />
     <ion-header slot="start">
       <ion-toolbar>
         <ion-searchbar
@@ -29,12 +30,12 @@
         }}</ion-label>
       </ion-toolbar>
     </ion-footer>
-  </PageWrapper>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import BingoFieldList from '@/components/BingoFieldList.vue';
-import PageWrapper from '@/components/PageWrapper.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import { useResetFieldsAlert } from '@/composables/alert';
 import { useOpenAddModal, useOpenEditModal } from '@/composables/modal';
 import { useToast } from '@/composables/toast';
@@ -49,6 +50,7 @@ import {
   IonHeader,
   IonIcon,
   IonLabel,
+  IonPage,
   IonSearchbar,
   IonToolbar,
   SearchbarChangeEventDetail,

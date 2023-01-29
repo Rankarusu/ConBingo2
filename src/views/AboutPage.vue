@@ -1,5 +1,6 @@
 <template>
-  <PageWrapper title="About">
+  <ion-page>
+    <PageHeader title="About" />
     <ion-content :fullscreen="true">
       <ion-card class="ion-activatable">
         <ion-card-header>
@@ -51,23 +52,24 @@
         </ion-button>
       </ion-card>
     </ion-content>
-  </PageWrapper>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import {
+  IonButton,
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardTitle,
   IonCardSubtitle,
-  IonButton,
+  IonCardTitle,
   IonContent,
-  IonRippleEffect,
   IonIcon,
+  IonPage,
+  IonRippleEffect,
 } from '@ionic/vue';
 
-import PageWrapper from '@/components/PageWrapper.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import { logoGithub } from 'ionicons/icons';
 </script>
 

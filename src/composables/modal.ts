@@ -2,13 +2,9 @@ import FieldEditModal from '@/components/FieldEditModal.vue';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useFieldsStore } from '@/stores/fieldsStore';
 import { modalController } from '@ionic/vue';
-import { DbConnectionWrapper } from './database';
-import { useToast } from './toast';
-
-const fieldsStore = useFieldsStore();
-const currentSheetStore = useCurrentSheetStore();
 
 export async function useOpenAddModal() {
+  const fieldsStore = useFieldsStore();
   const modal = await modalController.create({
     component: FieldEditModal,
     componentProps: { title: 'Add Field' },
@@ -25,6 +21,8 @@ export async function useOpenAddModal() {
 }
 
 export async function useOpenEditModal(id: number) {
+  const fieldsStore = useFieldsStore();
+
   const field = await fieldsStore.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,
@@ -42,6 +40,8 @@ export async function useOpenEditModal(id: number) {
 }
 
 export async function useOpenEditCurrentModal(id: number) {
+  const currentSheetStore = useCurrentSheetStore();
+
   const field = await currentSheetStore.findOneById(id);
   const modal = await modalController.create({
     component: FieldEditModal,

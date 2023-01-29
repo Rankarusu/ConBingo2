@@ -1,5 +1,6 @@
 <template>
-  <PageWrapper title="Saved Sheets">
+  <ion-page>
+    <PageHeader title="Saved Sheets" />
     <ion-content :fullscreen="true" overflow-scroll="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
@@ -15,26 +16,34 @@
         </ion-row>
       </ion-grid>
     </ion-content>
-  </PageWrapper>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonGrid, IonRow } from '@ionic/vue';
-
-import PageWrapper from '@/components/PageWrapper.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
 import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
+import { useToast } from '@/composables/toast';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
+import { IonContent, IonGrid, IonPage, IonRow } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 
 const store = useSavedSheetsStore();
-const { sheets } = storeToRefs(store);
+const { sheets, activeSlide } = storeToRefs(store);
+
+const showSlider = ref<boolean>(false);
 
 function onLoad() {
   console.log('load event caught');
 }
-function onDelete() {
-  console.log('delete event caught');
+async function onDelete() {
+  const currentIndex = activeSlide.value;
+  console.log('delete event caught' + currentIndex);
+  const changes = await store.deleteOneById(currentIndex);
+  if (changes) {
+    useToast('Sheet deleted!', 'top');
+  }
 }
 function onImport() {
   console.log('import event caught');

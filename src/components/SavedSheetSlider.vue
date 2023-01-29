@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <SwiperComponent
+      v-if="sheets.length > 0"
       :modules="modules"
       navigation
       :pagination="{ clickable: true }"
@@ -9,17 +10,22 @@
       :lazy="{}"
       :css-mode="true"
       @swiper="onSwiper"
+      @active-index-change="setActiveIndex"
+      @slides-length-change="setActiveIndex"
     >
-      <swiper-slide v-for="sheet in props.sheets" :key="sheet.id">
+      <swiper-slide v-for="sheet in sheets" :id="sheet.id" :key="sheet.id">
         <BingoSheet :fields="sheet.content" :readonly="true"></BingoSheet>
       </swiper-slide>
     </SwiperComponent>
+    <ion-text v-else color="medium" class="ion-text-center">
+      <p>You have no saved sheets at the moment</p>
+    </ion-text>
   </div>
 </template>
 
 <script setup lang="ts">
 // Import Swiper Vue.js components
-import Swiper, { Navigation, Pagination, Lazy } from 'swiper'; //need the type for type hints below
+import Swiper, { Lazy, Navigation, Pagination } from 'swiper'; //need the type for type hints below
 import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/vue';
 // Import Swiper styles
 import 'swiper/css';
@@ -27,24 +33,36 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 
-import { computed, ref } from 'vue';
-import BingoSheet from './BingoSheet.vue';
+import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
+import { IonText } from '@ionic/vue';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
 import { storeToRefs } from 'pinia';
-import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
+import { ref, toRef } from 'vue';
+import BingoSheet from './BingoSheet.vue';
 
+const store = useSavedSheetsStore();
+const { activeSlide } = storeToRefs(store);
 interface SavedSheetsSliderProps {
   sheets: BingoSheetModel[];
 }
 const props = defineProps<SavedSheetsSliderProps>();
-
+const sheets = toRef(props, 'sheets');
 const swiperInstance = ref<Swiper | null>(null);
 
 const modules = [Navigation, Pagination, Lazy];
-const activeSlide = computed(() => swiperInstance.value?.activeIndex);
 
 function onSwiper(swiper: Swiper) {
   swiperInstance.value = swiper;
+}
+
+function setActiveIndex() {
+  if (!swiperInstance.value) {
+    return;
+  }
+  const activeIndex = swiperInstance.value?.activeIndex;
+  const activeElement = swiperInstance.value.slides[activeIndex];
+  activeSlide.value = parseInt(activeElement.id);
+  console.log(activeSlide.value);
 }
 </script>
 
@@ -75,5 +93,9 @@ function onSwiper(swiper: Swiper) {
 
 :deep(.swiper-pagination) {
   bottom: 0;
+}
+
+ion-text {
+  width: 100%;
 }
 </style>

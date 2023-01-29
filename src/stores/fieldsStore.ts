@@ -1,6 +1,5 @@
 import { FieldsRepository } from '@/composables/database';
 import { BingoField } from '@/models/BingoField';
-import { BingoSheet } from '@/models/BingoSheet';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 

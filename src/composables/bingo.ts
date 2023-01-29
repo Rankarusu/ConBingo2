@@ -1,12 +1,8 @@
 import { BingoField } from '@/models/BingoField';
 import { CheckableBingoField } from '@/models/CheckableBingoField';
-import { useCurrentSheetStore } from '@/stores/currentSheetStore';
-import { useFieldsStore } from '@/stores/fieldsStore';
-import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
 import { inject, InjectionKey } from 'vue';
-import { DbConnectionWrapper } from './database';
 
-const fieldsJsonRegex =
+export const fieldsJsonRegex =
   /^\[(({"id":\d+,"text":"(.*?)","checked":(true|false)},){24}({"id":\d+,"text":"(.*?)","checked":(true|false)}))\]$/;
 
 export const TOGGLE_CHECKED_IN_DB_INJECTION_KEY: InjectionKey<
@@ -80,14 +76,4 @@ function generateUniqueRandomNumbers(limit: number, range: number) {
     numbers.add(randomNumber);
   }
   return Array.from(numbers);
-}
-
-export async function useSaveSheet() {
-  // const fields = currentSheetStore.fields;
-  // const fieldsString = JSON.stringify(fields);
-  // if (!fieldsString.match(fieldsJsonRegex)) {
-  //   throw new Error('malformed JSON input. cannot save sheet');
-  // }
-  // console.log(JSON.stringify(fields));
-  // await savedSheetsStore.create(JSON.stringify(fields));
 }

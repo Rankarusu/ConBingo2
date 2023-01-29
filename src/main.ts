@@ -1,7 +1,6 @@
+import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import App from './App.vue';
-import router from './router';
-import { createPinia } from 'pinia';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -35,10 +34,12 @@ import {
   defineCustomElements as jeepSqlite,
 } from 'jeep-sqlite/loader';
 import { DbConnectionWrapper } from './composables/database';
-import { useSavedSheetsStore } from './stores/savedSheetsStore';
-import { useFieldsStore } from './stores/fieldsStore';
-import { useCurrentSheetStore } from './stores/currentSheetStore';
+
 import { useGenerateSheet } from './composables/bingo';
+import router from './router';
+import { useCurrentSheetStore } from './stores/currentSheetStore';
+import { useFieldsStore } from './stores/fieldsStore';
+import { useSavedSheetsStore } from './stores/savedSheetsStore';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -89,8 +90,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     console.log(currentSheet);
-
-    app.config.globalProperties.$db = db;
 
     const currentSheetStore = useCurrentSheetStore();
     currentSheetStore.init(db.currentSheet);
