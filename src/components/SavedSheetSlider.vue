@@ -1,13 +1,13 @@
 <template>
-  <div class="wrapper">
+  <div v-show="showSwiper" class="wrapper">
     <SwiperComponent
-      v-if="sheets.length > 0"
+      v-if="renderSwiper"
       :modules="modules"
       navigation
       :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="20"
-      :lazy="{}"
+      :lazy="true"
       :css-mode="true"
       @swiper="onSwiper"
       @active-index-change="setActiveIndex"
@@ -17,10 +17,14 @@
         <BingoSheet :fields="sheet.content" :readonly="true"></BingoSheet>
       </swiper-slide>
     </SwiperComponent>
-    <ion-text v-else color="medium" class="ion-text-center">
-      <p>You have no saved sheets at the moment</p>
-    </ion-text>
   </div>
+  <div v-show="!showSwiper" class="wrapper">
+    <ion-spinner color="primary" name="crescent"></ion-spinner>
+  </div>
+
+  <!-- <ion-text v-else color="medium" class="ion-text-center">
+      <p>You have no saved sheets at the moment</p>
+    </ion-text> -->
 </template>
 
 <script setup lang="ts">
@@ -34,10 +38,10 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 
 import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
-import { IonText } from '@ionic/vue';
+import { IonText, IonSpinner } from '@ionic/vue';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
 import { storeToRefs } from 'pinia';
-import { ref, toRef } from 'vue';
+import { onMounted, ref, toRef } from 'vue';
 import BingoSheet from './BingoSheet.vue';
 
 const store = useSavedSheetsStore();
@@ -48,6 +52,9 @@ interface SavedSheetsSliderProps {
 const props = defineProps<SavedSheetsSliderProps>();
 const sheets = toRef(props, 'sheets');
 const swiperInstance = ref<Swiper | null>(null);
+
+const renderSwiper = ref<boolean>(false);
+const showSwiper = ref<boolean>(false);
 
 const modules = [Navigation, Pagination, Lazy];
 
@@ -64,6 +71,16 @@ function setActiveIndex() {
   activeSlide.value = parseInt(activeElement.id);
   console.log(activeSlide.value);
 }
+
+onMounted(async () => {
+  setTimeout(() => {
+    showSwiper.value = true;
+  }, 2000);
+
+  setTimeout(() => {
+    renderSwiper.value = true;
+  }, 100);
+});
 </script>
 
 <style scoped>
@@ -96,6 +113,9 @@ function setActiveIndex() {
 }
 
 ion-text {
+  width: 100%;
+}
+ion-spinner {
   width: 100%;
 }
 </style>
