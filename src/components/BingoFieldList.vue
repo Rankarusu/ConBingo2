@@ -2,7 +2,7 @@
   <ion-list>
     <TransitionGroup name="list">
       <BingoFieldListItem
-        v-for="item in reactiveFields"
+        v-for="item in sortedFields"
         v-show="filterField(item.text)"
         :id="item.id!"
         :key="item.id"
@@ -10,9 +10,6 @@
       >
       </BingoFieldListItem>
     </TransitionGroup>
-    <ion-infinite-scroll @ion-infinite="ionInfinite">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll>
   </ion-list>
   <ion-button expand="block" color="danger" @click="$emit('resetFieldsEvent')">
     Reset Fields
@@ -20,19 +17,13 @@
 </template>
 
 <script lang="ts" setup>
-import { BingoField } from '@/models/BingoField';
 import { useFieldsStore } from '@/stores/fieldsStore';
-import {
-  IonButton,
-  IonList,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
-} from '@ionic/vue';
+import { IonButton, IonList } from '@ionic/vue';
 
 import { storeToRefs } from 'pinia';
 //false positive
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { onMounted, reactive, TransitionGroup } from 'vue';
+import { TransitionGroup } from 'vue';
 import BingoFieldListItem from './BingoFieldListItem.vue';
 
 interface BingoFieldListProps {
@@ -48,28 +39,6 @@ defineEmits(['resetFieldsEvent']);
 function filterField(fieldText: string) {
   return fieldText.toLowerCase().indexOf(props.filter) > -1;
 }
-
-const reactiveFields = reactive<BingoField[]>([]);
-function generateItems() {
-  const start = reactiveFields.length;
-  const end = sortedFields.value.length;
-  console.log(start, end);
-  for (let i = start; i < start + 8; i++) {
-    if (i === end) {
-      break;
-    }
-    reactiveFields.push(sortedFields.value[i]);
-  }
-}
-
-const ionInfinite = (ev: any) => {
-  generateItems();
-  setTimeout(() => ev.target.complete(), 500);
-};
-
-onMounted(() => {
-  generateItems();
-});
 </script>
 
 <style scoped>
