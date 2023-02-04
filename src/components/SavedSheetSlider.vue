@@ -1,7 +1,7 @@
 <template>
-  <div v-show="showSwiper" class="wrapper">
+  <div class="wrapper">
     <SwiperComponent
-      v-if="renderSwiper"
+      v-if="sheets.length > 0"
       :modules="modules"
       navigation
       :pagination="{ clickable: true }"
@@ -9,27 +9,29 @@
       :space-between="20"
       :lazy="true"
       :css-mode="true"
+      :virtual="true"
       @swiper="onSwiper"
       @active-index-change="setActiveIndex"
       @slides-length-change="setActiveIndex"
     >
-      <swiper-slide v-for="sheet in sheets" :id="sheet.id" :key="sheet.id">
+      <swiper-slide
+        v-for="sheet in sheets"
+        :id="sheet.id"
+        :key="sheet.id"
+        :virtual-index="sheet.id"
+      >
         <BingoSheet :fields="sheet.content" :readonly="true"></BingoSheet>
       </swiper-slide>
     </SwiperComponent>
-  </div>
-  <div v-show="!showSwiper" class="wrapper">
-    <ion-spinner color="primary" name="crescent"></ion-spinner>
-  </div>
-
-  <!-- <ion-text v-else color="medium" class="ion-text-center">
+    <ion-text v-else color="medium" class="ion-text-center">
       <p>You have no saved sheets at the moment</p>
-    </ion-text> -->
+    </ion-text>
+  </div>
 </template>
 
 <script setup lang="ts">
 // Import Swiper Vue.js components
-import Swiper, { Lazy, Navigation, Pagination } from 'swiper'; //need the type for type hints below
+import Swiper, { Lazy, Virtual, Navigation, Pagination } from 'swiper'; //need the type for type hints below
 import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/vue';
 // Import Swiper styles
 import 'swiper/css';
@@ -38,10 +40,10 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 
 import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
-import { IonText, IonSpinner } from '@ionic/vue';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
+import { IonText, IonSkeletonText } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref, toRef } from 'vue';
+import { ref, toRef } from 'vue';
 import BingoSheet from './BingoSheet.vue';
 
 const store = useSavedSheetsStore();
@@ -53,10 +55,7 @@ const props = defineProps<SavedSheetsSliderProps>();
 const sheets = toRef(props, 'sheets');
 const swiperInstance = ref<Swiper | null>(null);
 
-const renderSwiper = ref<boolean>(false);
-const showSwiper = ref<boolean>(false);
-
-const modules = [Navigation, Pagination, Lazy];
+const modules = [Navigation, Pagination, Virtual, Lazy];
 
 function onSwiper(swiper: Swiper) {
   swiperInstance.value = swiper;
@@ -67,20 +66,13 @@ function setActiveIndex() {
     return;
   }
   const activeIndex = swiperInstance.value?.activeIndex;
+  const activeElementV = swiperInstance.value.virtual.slides[activeIndex];
   const activeElement = swiperInstance.value.slides[activeIndex];
-  activeSlide.value = parseInt(activeElement.id);
-  console.log(activeSlide.value);
+
+  console.log(activeIndex, activeElementV, activeElement);
+  console.log(activeElementV.props.id);
+  activeSlide.value = parseInt(activeElementV.props.id);
 }
-
-onMounted(async () => {
-  setTimeout(() => {
-    showSwiper.value = true;
-  }, 2000);
-
-  setTimeout(() => {
-    renderSwiper.value = true;
-  }, 100);
-});
 </script>
 
 <style scoped>

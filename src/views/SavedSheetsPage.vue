@@ -4,7 +4,11 @@
     <ion-content :fullscreen="true" overflow-scroll="true">
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
-          <SavedSheetSlider :sheets="sheets"></SavedSheetSlider>
+          <SavedSheetSlider
+            v-if="showSlider"
+            :sheets="sheets"
+          ></SavedSheetSlider>
+          <ion-spinner v-else name="crescent" color="primary"></ion-spinner>
         </ion-row>
         <ion-row>
           <SavedSheetsButtonBox
@@ -25,7 +29,14 @@ import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
 import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
 import { useToast } from '@/composables/toast';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
-import { IonContent, IonGrid, IonPage, IonRow } from '@ionic/vue';
+import {
+  IonContent,
+  IonGrid,
+  IonPage,
+  IonRow,
+  IonSpinner,
+  onIonViewDidEnter,
+} from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
@@ -51,6 +62,12 @@ function onImport() {
 function onExport() {
   console.log('export event caught');
 }
+
+onIonViewDidEnter(() => {
+  setTimeout(() => {
+    showSlider.value = true;
+  }, sheets.value.length * 50);
+});
 </script>
 
 <style scoped>
@@ -62,5 +79,11 @@ ion-grid {
 
 .expand {
   flex-grow: 1;
+}
+
+ion-spinner {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

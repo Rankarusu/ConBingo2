@@ -1,15 +1,19 @@
 <template>
   <ion-list>
-    <TransitionGroup name="list">
-      <BingoFieldListItem
-        v-for="item in sortedFields"
-        v-show="filterField(item.text)"
-        :id="item.id!"
-        :key="item.id"
-        :text="item.text"
-      >
-      </BingoFieldListItem>
-    </TransitionGroup>
+    <DynamicScroller :items="sortedFields" :min-item-size="47" class="scroller">
+      <template #default="{ item, index, active }">
+        <DynamicScrollerItem
+          :key="item.id"
+          :item="item"
+          :active="active"
+          :size-dependencies="[item.text]"
+          :data-index="index"
+        >
+          <BingoFieldListItem :id="item.id!" :key="item.id" :text="item.text">
+          </BingoFieldListItem>
+        </DynamicScrollerItem>
+      </template>
+    </DynamicScroller>
   </ion-list>
   <ion-button expand="block" color="danger" @click="$emit('resetFieldsEvent')">
     Reset Fields
@@ -18,7 +22,8 @@
 
 <script lang="ts" setup>
 import { useFieldsStore } from '@/stores/fieldsStore';
-import { IonButton, IonList } from '@ionic/vue';
+import { IonButton, IonList, onIonViewDidEnter } from '@ionic/vue';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 
 import { storeToRefs } from 'pinia';
 //false positive

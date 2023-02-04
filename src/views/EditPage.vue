@@ -10,13 +10,19 @@
           show-clear-button="always"
           @ion-change="updateSearchTerm($event)"
         ></ion-searchbar>
+        <ion-progress-bar
+          v-show="!showList"
+          type="indeterminate"
+        ></ion-progress-bar>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" overflow-scroll="true">
       <BingoFieldList
+        v-if="showList"
         :filter="searchTerm"
         @reset-fields-event="onResetFields"
       ></BingoFieldList>
+      <!-- <ion-spinner v-else color="primary" name="crescent"></ion-spinner> -->
     </ion-content>
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
       <ion-fab-button @click="onAddField">
@@ -53,7 +59,9 @@ import {
   IonPage,
   IonSearchbar,
   IonToolbar,
+  onIonViewDidEnter,
   SearchbarChangeEventDetail,
+  IonProgressBar,
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import { storeToRefs } from 'pinia';
@@ -62,6 +70,7 @@ import { computed, provide, ref } from 'vue';
 const store = useFieldsStore();
 const { fields } = storeToRefs(store);
 const searchTerm = ref<string>('');
+const showList = ref<boolean>(false);
 
 defineEmits(['addNewFieldEvent']);
 
@@ -123,6 +132,12 @@ const footerText = computed(() => {
     text = `Displaying ${listSize.value} of ${maxSize} fields`;
   }
   return text;
+});
+
+onIonViewDidEnter(() => {
+  setTimeout(() => {
+    showList.value = true;
+  }, listSize.value * 20);
 });
 </script>
 
