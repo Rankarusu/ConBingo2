@@ -5,6 +5,7 @@
         <ion-menu-button color="primary"></ion-menu-button>
       </ion-buttons>
       <ion-title>{{ props.title }}</ion-title>
+      <slot></slot>
     </ion-toolbar>
   </ion-header>
 </template>

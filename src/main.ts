@@ -42,7 +42,7 @@ import router from './router';
 import { useCurrentSheetStore } from './stores/currentSheetStore';
 import { useFieldsStore } from './stores/fieldsStore';
 import { useSavedSheetsStore } from './stores/savedSheetsStore';
-import VueVirtualScroller from 'vue-virtual-scroller';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 
 applyPolyfills().then(() => {
   jeepSqlite(window);
@@ -52,11 +52,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   const platform = Capacitor.getPlatform();
   const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
   const pinia = createPinia();
-  const app = createApp(App)
-    .use(IonicVue)
-    .use(router)
-    .use(pinia)
-    .use(VueVirtualScroller);
+  const app = createApp(App).use(IonicVue).use(router).use(pinia);
+
+  app.component('DynamicScroller', DynamicScroller);
+  app.component('DynamicScrollerItem', DynamicScrollerItem);
 
   try {
     if (platform === 'web') {

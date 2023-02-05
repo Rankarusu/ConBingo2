@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 // Import Swiper Vue.js components
-import Swiper, { Lazy, Virtual, Navigation, Pagination } from 'swiper'; //need the type for type hints below
+import Swiper, { Lazy, Navigation, Pagination, Virtual } from 'swiper'; //need the type for type hints below
 import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/vue';
 // Import Swiper styles
 import 'swiper/css';
@@ -41,7 +41,7 @@ import 'swiper/css/scrollbar';
 
 import { BingoSheet as BingoSheetModel } from '@/models/BingoSheet';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
-import { IonText, IonSkeletonText } from '@ionic/vue';
+import { IonText } from '@ionic/vue';
 import { storeToRefs } from 'pinia';
 import { ref, toRef } from 'vue';
 import BingoSheet from './BingoSheet.vue';

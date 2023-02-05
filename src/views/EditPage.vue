@@ -1,31 +1,52 @@
 <template>
   <ion-page>
-    <PageHeader title="Edit Fields" />
+    <PageHeader title="Edit Fields">
+      <ion-buttons slot="primary">
+        <ion-button id="popover-button">
+          <ion-icon
+            slot="icon-only"
+            :ios="ellipsisHorizontal"
+            :md="ellipsisVertical"
+          ></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-popover
+        trigger="popover-button"
+        :dismiss-on-select="true"
+        alignment="end"
+      >
+        <ion-content>
+          <ion-list>
+            <ion-item
+              class="danger-text"
+              :button="true"
+              :detail="false"
+              @click="onResetFields"
+              >Reset Fields</ion-item
+            >
+          </ion-list>
+        </ion-content>
+      </ion-popover>
+    </PageHeader>
+
     <ion-header slot="start">
       <ion-toolbar>
         <ion-searchbar
+          :disabled="!showList"
           :debounce="200"
           :animated="true"
           placeholder="Search for bingo fields"
           show-clear-button="always"
           @ion-change="updateSearchTerm($event)"
         ></ion-searchbar>
-        <ion-progress-bar
-          v-show="!showList"
-          type="indeterminate"
-        ></ion-progress-bar>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true" overflow-scroll="true">
-      <BingoFieldList
-        v-if="showList"
-        :filter="searchTerm"
-        @reset-fields-event="onResetFields"
-      ></BingoFieldList>
-      <!-- <ion-spinner v-else color="primary" name="crescent"></ion-spinner> -->
+    <ion-content :scroll-y="false">
+      <BingoFieldList :filter="searchTerm"></BingoFieldList>
     </ion-content>
+
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-      <ion-fab-button @click="onAddField">
+      <ion-fab-button :disabled="!showList" @click="onAddField">
         <ion-icon :icon="add"></ion-icon>
       </ion-fab-button>
     </ion-fab>
@@ -49,28 +70,31 @@ import { BingoField } from '@/models/BingoField';
 import { useFieldsStore } from '@/stores/fieldsStore';
 import { IonSearchbarCustomEvent } from '@ionic/core';
 import {
+  IonButton,
+  IonButtons,
   IonContent,
   IonFab,
   IonFabButton,
   IonFooter,
   IonHeader,
   IonIcon,
+  IonItem,
   IonLabel,
+  IonList,
   IonPage,
+  IonPopover,
   IonSearchbar,
   IonToolbar,
-  onIonViewDidEnter,
   SearchbarChangeEventDetail,
-  IonProgressBar,
 } from '@ionic/vue';
-import { add } from 'ionicons/icons';
+import { add, ellipsisHorizontal, ellipsisVertical } from 'ionicons/icons';
 import { storeToRefs } from 'pinia';
 import { computed, provide, ref } from 'vue';
 
 const store = useFieldsStore();
 const { fields } = storeToRefs(store);
 const searchTerm = ref<string>('');
-const showList = ref<boolean>(false);
+const showList = ref<boolean>(true);
 
 defineEmits(['addNewFieldEvent']);
 
@@ -99,7 +123,6 @@ async function onAddField() {
 }
 
 async function onResetFields() {
-  console.log('reset fields event caught');
   const changes = await useResetFieldsAlert();
   if (changes) {
     useToast('Fields have been reset!', 'middle');
@@ -124,21 +147,19 @@ const listSize = computed(() => {
 });
 
 const footerText = computed(() => {
-  let text;
   const maxSize = fields.value?.length;
   if (listSize.value === maxSize) {
-    text = `Displaying ${maxSize} fields`;
-  } else {
-    text = `Displaying ${listSize.value} of ${maxSize} fields`;
+    return `Displaying ${maxSize} fields`;
   }
-  return text;
-});
-
-onIonViewDidEnter(() => {
-  setTimeout(() => {
-    showList.value = true;
-  }, listSize.value * 20);
+  return `Displaying ${listSize.value} of ${maxSize} fields`;
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+ion-popover {
+  --width: 150px;
+}
+.danger-text {
+  color: var(--ion-color-danger);
+}
+</style>
