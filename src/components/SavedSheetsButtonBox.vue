@@ -26,7 +26,14 @@
 
     <ion-row>
       <ion-col>
-        <ion-button expand="block" @click="$emit('importEvent')">
+        <input
+          id="file-chooser"
+          type="file"
+          accept=".json"
+          class="ion-hide"
+          @change="(payload) => onFileChosen(payload)"
+        />
+        <ion-button expand="block" @click="onImport">
           <ion-icon slot="start" :icon="download"></ion-icon>
           Import
         </ion-button>
@@ -55,7 +62,28 @@ import { storeToRefs } from 'pinia';
 const store = useSavedSheetsStore();
 const { sheets } = storeToRefs(store);
 
-defineEmits(['loadEvent', 'deleteEvent', 'importEvent', 'exportEvent']);
+function onImport() {
+  const fileChooser = document.getElementById('file-chooser');
+  console.log(fileChooser);
+  fileChooser?.click();
+}
+
+function onFileChosen(payload: Event) {
+  const input = payload.target as HTMLInputElement;
+  if (!input.files?.length) {
+    return;
+  }
+  const file = input.files[0];
+
+  emit('importEvent', file);
+}
+
+const emit = defineEmits([
+  'loadEvent',
+  'deleteEvent',
+  'importEvent',
+  'exportEvent',
+]);
 </script>
 
 <style scoped>

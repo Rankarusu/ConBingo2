@@ -32,6 +32,7 @@
 import PageHeader from '@/components/PageHeader.vue';
 import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
 import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
+import { fieldsJsonRegex } from '@/composables/bingo';
 import { useToast } from '@/composables/toast';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
@@ -71,10 +72,36 @@ async function onDelete() {
     useToast('Sheet deleted!', 'top');
   }
 }
-function onImport() {
+async function onImport(file: File) {
   console.log('import event caught');
+  const content = await readFile(file);
+  if (!content) {
+    useToast('Error', 'top', 'danger');
+    return;
+  }
+  if (!fieldsJsonRegex.test(content)) {
+    useToast('File content malformed', 'top', 'danger');
+    return;
+  }
+  const changes = await store.create(content);
+  if (changes) {
+    useToast('Sheet imported successfully!', 'top', 'success');
+    return;
+  }
 }
-function onExport() {
+
+function readFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      resolve(fr.result as string);
+    };
+    fr.onerror = reject;
+    fr.readAsText(file);
+  });
+}
+
+async function onExport() {
   console.log('export event caught');
 }
 
