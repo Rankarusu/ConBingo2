@@ -36,8 +36,6 @@ import { fieldsJsonRegex } from '@/composables/bingo';
 import { useToast } from '@/composables/toast';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
-import { Share } from '@capacitor/share';
-import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { FileSharer } from '@byteowls/capacitor-filesharer';
 
 import {
