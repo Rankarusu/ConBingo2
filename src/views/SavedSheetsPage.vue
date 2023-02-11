@@ -36,6 +36,10 @@ import { fieldsJsonRegex } from '@/composables/bingo';
 import { useToast } from '@/composables/toast';
 import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
+import { Share } from '@capacitor/share';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { FileSharer } from '@byteowls/capacitor-filesharer';
+
 import {
   IonContent,
   IonGrid,
@@ -74,6 +78,10 @@ async function onDelete() {
 }
 async function onImport(file: File) {
   console.log('import event caught');
+  if (file.type !== 'application/json') {
+    useToast('Invalid format', 'top', 'danger');
+    return;
+  }
   const content = await readFile(file);
   if (!content) {
     useToast('Error', 'top', 'danger');
@@ -103,6 +111,14 @@ function readFile(file: File) {
 
 async function onExport() {
   console.log('export event caught');
+  const selectedSheet = await store.findOneById(activeSlide.value);
+  const content = JSON.stringify(selectedSheet.content);
+
+  await FileSharer.share({
+    filename: 'bingo-sheet.json',
+    contentType: 'application/json',
+    base64Data: btoa(content),
+  });
 }
 
 onIonViewDidEnter(() => {
