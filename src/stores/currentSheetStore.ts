@@ -22,7 +22,7 @@ export const useCurrentSheetStore = defineStore('currentSheet', () => {
   }
 
   async function updateOneById(id: number, text: string) {
-    await repository.value?.updateOneById(id, text);
+    await repository.value?.updateOneById(id, { text });
     await update();
   }
 
@@ -40,6 +40,7 @@ export const useCurrentSheetStore = defineStore('currentSheet', () => {
     if (!repository.value) {
       throw new Error('currentSheet Repository is not defined');
     }
+
     fields.value = await repository.value.findAll();
   }
 

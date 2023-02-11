@@ -75,7 +75,7 @@ async function onReroll() {
   currentSheetStore.fields = []; //to force a rerender TODO: make this more graceful.
   //vue tries to be smart when it comes to rerendering of lists but it does give us some trouble in our use case
 
-  currentSheetStore.reset(newSheet);
+  await currentSheetStore.reset(newSheet);
 }
 </script>
 

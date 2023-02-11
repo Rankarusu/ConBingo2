@@ -22,7 +22,7 @@ export const useFieldsStore = defineStore('fields', () => {
   }
 
   async function updateOneById(id: number, text: string) {
-    const result = await repository.value?.updateOneById(id, text);
+    const result = await repository.value?.updateOneById(id, { text });
     await update();
     return result;
   }
@@ -34,7 +34,7 @@ export const useFieldsStore = defineStore('fields', () => {
   }
 
   async function create(text: string) {
-    const result = await repository.value?.create(text);
+    const result = await repository.value?.create({ text });
     await update();
     return result;
   }

@@ -1,4 +1,3 @@
-import { fieldsJsonRegex } from '@/composables/bingo';
 import { SavedSheetsRepository } from '@/composables/database';
 import { BingoSheet } from '@/models/BingoSheet';
 import { defineStore } from 'pinia';
@@ -14,11 +13,8 @@ export const useSavedSheetsStore = defineStore('savedSheets', () => {
     await update();
   }
 
-  async function create(fields: string) {
-    if (!fields.match(fieldsJsonRegex)) {
-      throw new Error('malformed JSON input. cannot save sheet');
-    }
-    const result = await repository.value?.create(fields);
+  async function create(content: string) {
+    const result = await repository.value?.create({ content });
     await update();
     console.log(sheets.value);
     return result;
@@ -28,12 +24,28 @@ export const useSavedSheetsStore = defineStore('savedSheets', () => {
     if (!repository.value) {
       throw new Error('savedSheets Repository is not defined');
     }
-    sheets.value = await repository.value.findAll();
+    const dbSheets = await repository.value.findAll();
+    const bingoSheets = dbSheets.map((sheet) => {
+      const obj = {
+        id: sheet.id,
+        content: JSON.parse(sheet.content),
+      } as BingoSheet;
+      return obj;
+    });
+
+    sheets.value = bingoSheets;
   }
 
   async function findOneById(id: number) {
-    const result = await repository.value?.findOneById(id);
-    return result;
+    const dbSheet = await repository.value?.findOneById(id);
+    if (!dbSheet) {
+      throw new Error(`Could not find a sheet with id ${id} in the db.`);
+    }
+    const sheet = {
+      id: dbSheet?.id,
+      content: JSON.parse(dbSheet?.content),
+    } as BingoSheet;
+    return sheet;
   }
 
   async function deleteOneById(id: number) {

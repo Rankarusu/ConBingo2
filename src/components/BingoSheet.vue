@@ -10,7 +10,7 @@
           :position="index"
           :text="item.text"
           :readonly="props.readonly"
-          :checked="item.checked"
+          :checked="!!item.checked"
           :editable="editable"
           @field-checked-event="onFieldCheckedEvent(index)"
         ></BingoField>
