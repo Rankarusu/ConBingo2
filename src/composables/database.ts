@@ -1,6 +1,7 @@
 import { BingoField } from '@/models/BingoField';
 import { BingoSheet } from '@/models/BingoSheet';
 import { CheckableBingoField } from '@/models/CheckableBingoField';
+import { DbBingoSheet } from '@/models/DbBingoSheet';
 import {
   CapacitorSQLite,
   SQLiteConnection,
@@ -337,6 +338,21 @@ export class SavedSheetsRepository extends BaseRepository {
       return obj;
     });
     return bingoSheets;
+  }
+
+  public async findOneById(id: number) {
+    const result = await this.db.query(
+      `SELECT * FROM savedSheets WHERE id = (?)`,
+      [id]
+    );
+    console.log(id, result.values);
+    if (!result.values) {
+      throw new Error('values not defined');
+    }
+    const sheet: DbBingoSheet = result.values[0];
+    // console.log(parsedResult);
+
+    return { id: sheet.id, content: JSON.parse(sheet.content) } as BingoSheet;
   }
 
   public async create(fields: string) {

@@ -31,6 +31,11 @@ export const useSavedSheetsStore = defineStore('savedSheets', () => {
     sheets.value = await repository.value.findAll();
   }
 
+  async function findOneById(id: number) {
+    const result = await repository.value?.findOneById(id);
+    return result;
+  }
+
   async function deleteOneById(id: number) {
     const result = await repository.value?.deleteOneById(id);
     await update();
@@ -39,5 +44,5 @@ export const useSavedSheetsStore = defineStore('savedSheets', () => {
 
   const activeSlide = ref<number>(0);
 
-  return { sheets, init, create, deleteOneById, activeSlide };
+  return { sheets, init, create, deleteOneById, findOneById, activeSlide };
 });

@@ -7,12 +7,9 @@
       :pagination="{ clickable: true }"
       :slides-per-view="1"
       :space-between="20"
-      :lazy="true"
-      :css-mode="true"
-      :virtual="true"
+      :virtual="{ addSlidesBefore: 2, addSlidesAfter: 2, cache: true }"
       @swiper="onSwiper"
-      @active-index-change="setActiveIndex"
-      @slides-length-change="setActiveIndex"
+      @update="setActiveIndex"
     >
       <swiper-slide
         v-for="sheet in sheets"
@@ -31,7 +28,7 @@
 
 <script setup lang="ts">
 // Import Swiper Vue.js components
-import Swiper, { Lazy, Navigation, Pagination, Virtual } from 'swiper'; //need the type for type hints below
+import Swiper, { Navigation, Pagination, Virtual } from 'swiper'; //need the type for type hints below
 import { Swiper as SwiperComponent, SwiperSlide } from 'swiper/vue';
 // Import Swiper styles
 import 'swiper/css';
@@ -55,10 +52,11 @@ const props = defineProps<SavedSheetsSliderProps>();
 const sheets = toRef(props, 'sheets');
 const swiperInstance = ref<Swiper | null>(null);
 
-const modules = [Navigation, Pagination, Virtual, Lazy];
+const modules = [Navigation, Pagination, Virtual];
 
 function onSwiper(swiper: Swiper) {
   swiperInstance.value = swiper;
+  setActiveIndex();
 }
 
 function setActiveIndex() {
@@ -66,12 +64,8 @@ function setActiveIndex() {
     return;
   }
   const activeIndex = swiperInstance.value?.activeIndex;
-  const activeElementV = swiperInstance.value.virtual.slides[activeIndex];
-  const activeElement = swiperInstance.value.slides[activeIndex];
-
-  console.log(activeIndex, activeElementV, activeElement);
-  console.log(activeElementV.props.id);
-  activeSlide.value = parseInt(activeElementV.props.id);
+  const activeVirtualElement = swiperInstance.value.virtual.slides[activeIndex];
+  activeSlide.value = parseInt(activeVirtualElement.props.id);
 }
 </script>
 

@@ -5,10 +5,15 @@
       <ion-grid class="ion-no-margin ion-no-padding">
         <ion-row class="expand">
           <SavedSheetSlider
-            v-if="showSlider"
+            v-if="renderSlider"
+            v-show="showSlider"
             :sheets="sheets"
           ></SavedSheetSlider>
-          <ion-spinner v-else name="crescent" color="primary"></ion-spinner>
+          <ion-spinner
+            v-show="!showSlider"
+            name="crescent"
+            color="primary"
+          ></ion-spinner>
         </ion-row>
         <ion-row>
           <SavedSheetsButtonBox
@@ -28,6 +33,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import SavedSheetsButtonBox from '@/components/SavedSheetsButtonBox.vue';
 import SavedSheetSlider from '@/components/SavedSheetSlider.vue';
 import { useToast } from '@/composables/toast';
+import { useCurrentSheetStore } from '@/stores/currentSheetStore';
 import { useSavedSheetsStore } from '@/stores/savedSheetsStore';
 import {
   IonContent,
@@ -43,10 +49,19 @@ import { ref } from 'vue';
 const store = useSavedSheetsStore();
 const { sheets, activeSlide } = storeToRefs(store);
 
-const showSlider = ref<boolean>(false);
+const currentSheetStore = useCurrentSheetStore();
 
-function onLoad() {
-  console.log('load event caught');
+const showSlider = ref<boolean>(false);
+const renderSlider = ref<boolean>(false);
+
+async function onLoad() {
+  const activeSlideId = activeSlide.value;
+  console.log(activeSlideId);
+  const sheet = await store.findOneById(activeSlideId);
+  if (sheet) {
+    await currentSheetStore.reset(sheet.content);
+    useToast('Sheet loaded!', 'top');
+  }
 }
 async function onDelete() {
   const currentIndex = activeSlide.value;
@@ -64,9 +79,11 @@ function onExport() {
 }
 
 onIonViewDidEnter(() => {
+  renderSlider.value = true;
+
   setTimeout(() => {
     showSlider.value = true;
-  }, sheets.value.length * 50);
+  }, sheets.value.length * 30);
 });
 </script>
 
